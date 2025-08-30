@@ -1,0 +1,213 @@
+﻿@{
+    ViewData["Title"] = "Profile";
+    var userName = "Alexa Rawles"; // এটা ডাটাবেস থেকে আনতে পারো
+    var userEmail = "alexarawles@gmail.com";
+}
+
+<div class="profile-container">
+    <!-- Top Header -->
+    <div class="profile-header">
+        <h2>Welcome, @userName</h2>
+        <div class="nav-links">
+            <a href="/Home">Home</a>
+            <a href="/Posts">My Posts</a>
+        </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+        <div class="profile-info">
+            <label for="uploadPhoto">
+                <img src="~/images/profile.jpg" alt="Profile" class="profile-pic" id="profilePic" />
+            </label>
+            <input type="file" id="uploadPhoto" accept="image/*" style="display:none;" />
+
+            <div>
+                <h3 id="profileName">@userName</h3>
+                <p id="profileEmail">@userEmail</p>
+            </div>
+
+            <button id="editBtn" class="edit-btn">Edit</button>
+        </div>
+
+        <form id="profileForm">
+            <div class="form-grid">
+                <div>
+                    <label>Name</label>
+                    <input type="text" id="name" value="@userName" disabled />
+                </div>
+                <div>
+                    <label>First Name</label>
+                    <input type="text" id="firstName" value="Alexa" disabled />
+                </div>
+                <div>
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" value="Rawles" disabled />
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" id="email" value="@userEmail" disabled />
+                </div>
+                <div>
+                    <label>Password</label>
+                    <input type="password" id="password" value="123456" disabled />
+                </div>
+                <div>
+                    <label>Role</label>
+                    <select id="role" disabled>
+                        <option>User</option>
+                        <option>Admin</option>
+                    </select>
+                </div>
+                <div class="full-width">
+                    <label>Address</label>
+                    <input type="text" id="address" value="123 Street, NY" disabled />
+                </div>
+            </div>
+
+            <button type="submit" id="saveBtn" class="save-btn" style="display:none;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer></footer>
+
+<!-- Inline CSS -->
+<style>
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+    }
+
+    .profile-container {
+        flex: 1;
+        width: 80%; /* আগে ছিল 70% */
+        max-width: 950px;
+        margin: 40px auto;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .nav-links a {
+        margin: 0 10px;
+        text-decoration: none;
+        color: #007bff;
+        font-weight: 500;
+    }
+
+    .profile-card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        min-height: 500px; /* rectangle look */
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .profile-pic {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-right: 15px;
+        cursor: pointer;
+        border: 2px solid #ddd;
+    }
+
+    .edit-btn, .save-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-left: auto;
+        margin-top: 15px; /* 🔹 নিচে ফাঁকা জায়গা দিলাম */
+    }
+
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+        .form-grid .full-width {
+            grid-column: span 2;
+        }
+
+    label {
+        font-size: 14px;
+        color: #555;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    footer {
+        margin-top: auto;
+        padding: 15px 0;
+        background: #f8f9fa;
+        text-align: center;
+        color: #555;
+        border-top: 1px solid #ddd;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        const editBtn = document.getElementById("editBtn");
+        const saveBtn = document.getElementById("saveBtn");
+        const inputs = document.querySelectorAll("#profileForm input, #profileForm select");
+        const profilePic = document.getElementById("profilePic");
+        const uploadPhoto = document.getElementById("uploadPhoto");
+
+        // Edit Mode
+        editBtn.addEventListener("click", () => {
+            inputs.forEach(i => i.disabled = false);
+            saveBtn.style.display = "block";
+            editBtn.style.display = "none";
+        });
+
+        // Save Mode
+        saveBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            inputs.forEach(i => i.disabled = true);
+            saveBtn.style.display = "none";
+            editBtn.style.display = "block";
+            alert("Profile Saved Successfully!");
+        });
+
+        // Profile Picture Upload
+        uploadPhoto.addEventListener("change", function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    profilePic.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

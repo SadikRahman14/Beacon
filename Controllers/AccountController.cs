@@ -18,6 +18,29 @@ namespace Beacon.Controllers
             _userManager = userManager;
         }
 
+        // ---------- Profile Pages ----------
+        [Authorize] // only logged-in users can view Profile
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            return View(); // will open Views/Account/Profile.cshtml
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult MyPosts()
+        {
+            return View(); // will open Views/Account/MyPosts.cshtml
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult EditProfile()
+        {
+            return View(); // will open Views/Account/EditProfile.cshtml
+        }
+
+        // ---------- Existing code ----------
         [HttpGet]
         public IActionResult Register(string? returnUrl = null)
         {
@@ -34,31 +57,26 @@ namespace Beacon.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // create user; use email as both Email and UserName
             var user = new User
             {
                 Email = model.Email,
                 UserName = model.Email,
-                EmailConfirmed = true // optional: set false if you plan to send confirmation emails
+                EmailConfirmed = true
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
-                // auto sign-in after register (optional)
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return LocalRedirect(returnUrl ?? Url.Action("Index", "Home")!);
             }
 
-            // bubble up identity errors to the validation summary
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
             return View(model);
         }
-
-
 
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
@@ -76,7 +94,6 @@ namespace Beacon.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            
             var user = await _userManager.FindByEmailAsync(model.Email!);
             if (user == null)
             {
@@ -84,7 +101,6 @@ namespace Beacon.Controllers
                 return View(model);
             }
 
-           
             var result = await _signInManager.PasswordSignInAsync(
                 user,
                 model.Password!,

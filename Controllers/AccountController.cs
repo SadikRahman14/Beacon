@@ -23,12 +23,10 @@ namespace Beacon.Controllers
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User);
-
             if (user == null)
                 return RedirectToAction("Login");
 
             ViewData["UserEmail"] = user.Email ?? "N/A";
-
             return View(user);
         }
 
@@ -39,13 +37,13 @@ namespace Beacon.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login");
 
-            return View(user); // Pass current user data to pre-fill the form
+            return View(user);
         }
 
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProfile(User model)
+        public async Task<IActionResult> EditProfile(User model, IFormFile? ProfileImage)
         {
             if (!ModelState.IsValid)
                 return View(model);
@@ -53,7 +51,6 @@ namespace Beacon.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login");
 
-            // Update allowed fields
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
             user.DateOfBirth = model.DateOfBirth;
@@ -61,8 +58,22 @@ namespace Beacon.Controllers
             user.Address = model.Address;
             user.UpdatedAt = DateTime.UtcNow;
 
-            var result = await _userManager.UpdateAsync(user);
+            if (ProfileImage != null && ProfileImage.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(ProfileImage.FileName)}";
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+                var filePath = Path.Combine(uploadsFolder, fileName);
 
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await ProfileImage.CopyToAsync(stream);
+                }
+
+                user.ProfileImageUrl = $"/uploads/{fileName}";
+            }
+
+            var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
                 TempData["Success"] = "Profile updated successfully!";
@@ -75,12 +86,42 @@ namespace Beacon.Controllers
             return View(model);
         }
 
+        // ---------------- New Action for AJAX Upload ----------------
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadProfileImage(IFormFile ProfileImage)
+        {
+            if (ProfileImage == null || ProfileImage.Length == 0)
+                return Json(new { success = false, error = "No file selected." });
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Json(new { success = false, error = "User not found." });
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(ProfileImage.FileName)}";
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            Directory.CreateDirectory(uploadsFolder);
+
+            var filePath = Path.Combine(uploadsFolder, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await ProfileImage.CopyToAsync(stream);
+            }
+
+            user.ProfileImageUrl = $"/uploads/{fileName}";
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return Json(new { success = false, error = string.Join(", ", result.Errors.Select(e => e.Description)) });
+
+            return Json(new { success = true, imageUrl = user.ProfileImageUrl });
+        }
+
         [Authorize]
         [HttpGet]
-        public IActionResult MyPosts()
-        {
-            return View();
-        }
+        public IActionResult MyPosts() => View();
 
         [HttpGet]
         public IActionResult Register(string? returnUrl = null)
@@ -106,7 +147,6 @@ namespace Beacon.Controllers
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
-
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Beacon.Controllers
 {
-    [AllowAnonymous] // Allow unauthenticated access to login
+    [AllowAnonymous]
     public class AccountController : Controller
     {
         private readonly SignInManager<User> _signInManager;
@@ -18,29 +18,70 @@ namespace Beacon.Controllers
             _userManager = userManager;
         }
 
-        // ---------- Profile Pages ----------
-        [Authorize] // only logged-in users can view Profile
+        [Authorize]
         [HttpGet]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            return View(); // will open Views/Account/Profile.cshtml
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return RedirectToAction("Login");
+
+            ViewData["UserEmail"] = user.Email ?? "N/A";
+
+            return View(user);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            return View(user); // Pass current user data to pre-fill the form
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(User model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            // Update allowed fields
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.DateOfBirth = model.DateOfBirth;
+            user.Gender = model.Gender;
+            user.Address = model.Address;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["Success"] = "Profile updated successfully!";
+                return RedirectToAction("Profile");
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+
+            return View(model);
         }
 
         [Authorize]
         [HttpGet]
         public IActionResult MyPosts()
         {
-            return View(); // will open Views/Account/MyPosts.cshtml
+            return View();
         }
 
-        [Authorize]
-        [HttpGet]
-        public IActionResult EditProfile()
-        {
-            return View(); // will open Views/Account/EditProfile.cshtml
-        }
-
-        // ---------- Existing code ----------
         [HttpGet]
         public IActionResult Register(string? returnUrl = null)
         {

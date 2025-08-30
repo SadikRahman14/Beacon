@@ -6,10 +6,8 @@ namespace Beacon.Models
 {
     public class User : IdentityUser
     {
-
         [StringLength(100)]
         public string? FirstName { get; set; }
-
 
         [StringLength(100)]
         public string? LastName { get; set; }
@@ -18,6 +16,15 @@ namespace Beacon.Models
 
         [StringLength(50)]
         public string Role { get; set; } = "citizen";
+
+        [DataType(DataType.Date)]
+        public DateTime? DateOfBirth { get; set; }   
+
+        [StringLength(10)]
+        public string? Gender { get; set; }         
+
+        [StringLength(500)]
+        public string? Address { get; set; }         
 
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

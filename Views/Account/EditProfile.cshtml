@@ -1,3 +1,4 @@
+@model Beacon.Models.User
 @{
     ViewData["Title"] = "Edit Profile";
 }
@@ -8,35 +9,38 @@
     </div>
 
     <div class="profile-card">
-        <form id="profileForm">
+        <form asp-action="EditProfile" method="post">
+            @Html.AntiForgeryToken()
+
             <div class="form-grid">
                 <div>
-                    <label>First Name</label>
-                    <input type="text" id="firstName" value="" />
+                    <label asp-for="FirstName"></label>
+                    <input asp-for="FirstName" maxlength="100" required />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
                 </div>
                 <div>
-                    <label>Last Name</label>
-                    <input type="text" id="lastName" value="" />
+                    <label asp-for="LastName"></label>
+                    <input asp-for="LastName" maxlength="100" required />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
                 <div>
-                    <label>Date of Birth</label>
-                    <input type="date" id="dob" value="" />
+                    <label asp-for="DateOfBirth"></label>
+                    <input asp-for="DateOfBirth" type="date" required />
+                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
                 </div>
                 <div>
-                    <label>Mobile Number</label>
-                    <input type="text" id="mobile" value="" placeholder="01XXXXXXXXX" />
-                </div>
-                <div>
-                    <label>Gender</label>
-                    <select id="gender">
+                    <label asp-for="Gender"></label>
+                    <select asp-for="Gender" required>
                         <option value="">Select Gender</option>
-                        <option>Male</option>
-                        <option>Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
                     </select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
                 </div>
                 <div class="full-width">
-                    <label>Address</label>
-                    <input type="text" id="address" value="" />
+                    <label asp-for="Address"></label>
+                    <input asp-for="Address" maxlength="500" required />
+                    <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
             </div>
 
@@ -45,10 +49,19 @@
                 <button type="submit" class="nav-btn save">Save</button>
             </div>
         </form>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="success-message" style="margin-top:15px;color:green;">
+                @TempData["Success"]
+            </div>
+        }
     </div>
 </div>
 
-<footer></footer>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
 
 <style>
     body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family:'Segoe UI', sans-serif; }
@@ -66,54 +79,6 @@
     .nav-btn.save:hover { background:#1e7e34; }
     .nav-btn.back { background:#6c63ff; color:white; }
     .nav-btn.back:hover { background:#4a47c6; }
+    footer { margin-top:auto; padding:15px 0; background:#f8f9fa; text-align:center; color:#555; border-top:1px solid #ddd; }
+    .text-danger { color:red; font-size:13px; }
 </style>
-
-@section Scripts {
-<script>
-const form = document.getElementById("profileForm");
-
-form.addEventListener("submit", function(e){
-    e.preventDefault();
-
-    const firstName = document.getElementById("firstName").value.trim();
-    const lastName = document.getElementById("lastName").value.trim();
-    const dob = document.getElementById("dob").value;
-    const mobile = document.getElementById("mobile").value.trim();
-    const gender = document.getElementById("gender").value;
-    const address = document.getElementById("address").value.trim();
-
-    if(!firstName || !lastName || !dob || !mobile || !gender || !address){
-        alert("All fields are required!");
-        return;
-    }
-
-    if(firstName.length > 20 || lastName.length > 20){
-        alert("First and Last name must be 20 characters or less.");
-        return;
-    }
-
-    const birthDate = new Date(dob);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    if(age < 10 || age > 90){
-        alert("Age calculated from Date of Birth must be between 10 and 90.");
-        return;
-    }
-
-    const mobilePattern = /^01[356789]\d{8}$/;
-    if(!mobilePattern.test(mobile)){
-        alert("Invalid Bangladeshi mobile number. Must start with 01, 3rd digit 3/5/6/7/8/9, and 11 digits total.");
-        return;
-    }
-
-    const wordCount = address.split(/\s+/).length;
-    if(wordCount > 70){
-        alert("Address cannot exceed 70 words.");
-        return;
-    }
-
-    alert("Profile Saved Successfully!");
-    window.location.href = "/Account/Profile";
-});
-</script>
-}

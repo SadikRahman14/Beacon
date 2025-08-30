@@ -16,7 +16,6 @@ namespace Beacon.Models
 
         public string? ProfileImageUrl { get; set; }
 
-        // 'Role' can be a string or managed through IdentityRoles
         [StringLength(50)]
         public string Role { get; set; } = "citizen";
 

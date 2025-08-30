@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h2 class="headline">Edit Profile</h2>
+    </div>
+
+    <div class="profile-card">
+        <form id="profileForm">
+            <div class="form-grid">
+                <div>
+                    <label>First Name</label>
+                    <input type="text" id="firstName" value="" />
+                </div>
+                <div>
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" value="" />
+                </div>
+                <div>
+                    <label>Date of Birth</label>
+                    <input type="date" id="dob" value="" />
+                </div>
+                <div>
+                    <label>Mobile Number</label>
+                    <input type="text" id="mobile" value="" placeholder="01XXXXXXXXX" />
+                </div>
+                <div>
+                    <label>Gender</label>
+                    <select id="gender">
+                        <option value="">Select Gender</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                    </select>
+                </div>
+                <div class="full-width">
+                    <label>Address</label>
+                    <input type="text" id="address" value="" />
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="/Account/Profile" class="nav-btn back">Back to Profile</a>
+                <button type="submit" class="nav-btn save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer></footer>
+
+<style>
+    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family:'Segoe UI', sans-serif; }
+    .profile-container { flex:1; width:80%; max-width:950px; margin:40px auto; }
+    .profile-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .headline { font-size:26px; font-weight:700; color:#6c63ff; letter-spacing:1px; }
+    .profile-card { background:#fff; padding:40px; border-radius:20px; box-shadow:0 8px 25px rgba(0,0,0,0.12); }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+    .form-grid .full-width { grid-column:span 2; }
+    label { font-size:14px; color:#555; margin-bottom:5px; display:block; }
+    input, select { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; }
+    .btn-group { margin-top:40px; display:flex; gap:10px; }
+    .nav-btn { padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; text-decoration:none; cursor:pointer; border:none; transition:0.3s; }
+    .nav-btn.save { background:#28a745; color:white; }
+    .nav-btn.save:hover { background:#1e7e34; }
+    .nav-btn.back { background:#6c63ff; color:white; }
+    .nav-btn.back:hover { background:#4a47c6; }
+</style>
+
+@section Scripts {
+<script>
+const form = document.getElementById("profileForm");
+
+form.addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const dob = document.getElementById("dob").value;
+    const mobile = document.getElementById("mobile").value.trim();
+    const gender = document.getElementById("gender").value;
+    const address = document.getElementById("address").value.trim();
+
+    if(!firstName || !lastName || !dob || !mobile || !gender || !address){
+        alert("All fields are required!");
+        return;
+    }
+
+    if(firstName.length > 20 || lastName.length > 20){
+        alert("First and Last name must be 20 characters or less.");
+        return;
+    }
+
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    if(age < 10 || age > 90){
+        alert("Age calculated from Date of Birth must be between 10 and 90.");
+        return;
+    }
+
+    const mobilePattern = /^01[356789]\d{8}$/;
+    if(!mobilePattern.test(mobile)){
+        alert("Invalid Bangladeshi mobile number. Must start with 01, 3rd digit 3/5/6/7/8/9, and 11 digits total.");
+        return;
+    }
+
+    const wordCount = address.split(/\s+/).length;
+    if(wordCount > 70){
+        alert("Address cannot exceed 70 words.");
+        return;
+    }
+
+    alert("Profile Saved Successfully!");
+    window.location.href = "/Account/Profile";
+});
+</script>
+}

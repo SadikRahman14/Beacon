@@ -3,7 +3,6 @@
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,54 +15,36 @@
 
     <!-- Navbar -->
     <header class="bg-white shadow-md dark:bg-gray-800">
-        <nav class="mx-auto mr-2 flex items-center justify-between p-4 pr-4">
-
-             <a asp-area="" asp-controller="Home" asp-action="Index"
+        <nav class="mx-auto flex items-center justify-between p-4">
+            <!-- Logo -->
+            <a asp-area="" asp-controller="Home" asp-action="Index"
                class="text-3xl font-extrabold text-indigo-600 transition hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
                 Beacon
             </a> 
 
-
-            <div class="flex items-center gap-4 pr-10">
-                <!-- pr-10 nudges avatar inward -->
+            <!-- Right-side user menu -->
+            <div class="flex items-center gap-4">
                 @if (SignInManager.IsSignedIn(User))
                 {
                     var me = await UserManager.GetUserAsync(User);
                     var initial = (me?.FirstName?.Length ?? 0) > 0
-                    ? me!.FirstName![0].ToString().ToUpper()
-                    : (me?.Email ?? "?");
-                    var avatarUrl = me?.ProfileImageUrl;
+                        ? me!.FirstName![0].ToString().ToUpper()
+                        : (me?.Email ?? "?");
 
-                    <details class="relative z-50 mr-4" data-menu tabindex="0">
-                        <!-- Avatar button -->
-                        <summary class="h-9 w-9 cursor-pointer list-none overflow-hidden rounded-full ring-2 ring-black/10 focus:outline-none focus:ring-indigo-500
-                       dark:ring-white/10 [&::-webkit-details-marker]:hidden">
-                            @if (!string.IsNullOrWhiteSpace(avatarUrl))
-                            {
-                                <img src="@avatarUrl" alt="User avatar" class="h-full w-full object-cover" />
-                            }
-                            else
-                            {
-                                <span class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                                    @initial
-                                </span>
-                            }
-                        </summary>
-
+                    <details class="relative z-50" data-menu tabindex="0">
                         <!-- Dropdown -->
-                        <div class="absolute right-4 mt-2 w-48 origin-top-right rounded-xl border border-gray-200 bg-white p-1 shadow-lg
-                dark:border-gray-700 dark:bg-gray-800">
+                        <div class="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-gray-200 bg-white p-1 shadow-lg
+                            dark:border-gray-700 dark:bg-gray-800">
                             <a asp-controller="Account" asp-action="Profile"
                                class="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100
-                          dark:text-gray-200 dark:hover:bg-gray-700">
+                               dark:text-gray-200 dark:hover:bg-gray-700">
                                 Profile
                             </a>
-
                             <form asp-controller="Account" asp-action="Logout" method="post">
                                 @Html.AntiForgeryToken()
                                 <button type="submit"
                                         class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50
-                                   dark:text-red-400 dark:hover:bg-red-900/20">
+                                        dark:text-red-400 dark:hover:bg-red-900/20">
                                     Logout
                                 </button>
                             </form>
@@ -78,10 +59,7 @@
                     </a>
                 }
             </div>
-
         </nav>
-
-
     </header>
 
     <!-- Main Content -->
@@ -95,11 +73,8 @@
         🌙
     </button>
 
-
-
     <!-- Footer -->
     <footer class="mt-auto w-full bg-gray-800 py-8 text-gray-300 dark:bg-gray-900 dark:text-gray-400">
-
         <div class="container mx-auto flex flex-col items-center justify-between gap-2 md:flex-row">
             <p class="text-sm">&copy; 2025 - <span class="font-semibold text-white dark:text-gray-100">Beacon</span></p>
             <a asp-area="" asp-controller="Home" asp-action="Privacy"
@@ -133,43 +108,14 @@
             }
         });
     </script>
-    <script>
-        (function () {
-          const root = document.querySelector('[data-user-menu-root]');
-          if (!root) return;
-
-          const btn  = root.querySelector('[data-user-menu-button]');
-          const menu = root.querySelector('[data-user-menu]');
-
-          function open()  { menu.classList.remove('hidden'); }
-          function close() { menu.classList.add('hidden'); }
-          function toggle(e) { e.stopPropagation(); menu.classList.toggle('hidden'); }
-
-          // start closed
-          close();
-
-          // open/close
-          btn.addEventListener('click', toggle);
-
-          // clicking inside the menu shouldn't close it
-          menu.addEventListener('click', (e) => e.stopPropagation());
-
-          // clicking anywhere else closes it
-          document.addEventListener('click', close);
-
-          // Esc closes it
-          document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-        })();
-</script>
 
     <script>
         document.addEventListener('click', (e) => {
-          document.querySelectorAll('details[data-menu]').forEach(d => {
-            if (!d.contains(e.target)) d.removeAttribute('open');
-          });
+            document.querySelectorAll('details[data-menu]').forEach(d => {
+                if (!d.contains(e.target)) d.removeAttribute('open');
+            });
         });
     </script>
-
 
 </body>
 </html>

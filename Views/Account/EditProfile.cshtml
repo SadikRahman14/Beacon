@@ -1,0 +1,84 @@
+@model Beacon.Models.User
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h2 class="headline">Edit Profile</h2>
+    </div>
+
+    <div class="profile-card">
+        <form asp-action="EditProfile" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+                <div>
+                    <label asp-for="FirstName"></label>
+                    <input asp-for="FirstName" maxlength="100" required />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="LastName"></label>
+                    <input asp-for="LastName" maxlength="100" required />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="DateOfBirth"></label>
+                    <input asp-for="DateOfBirth" type="date" required />
+                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Gender"></label>
+                    <select asp-for="Gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+                </div>
+                <div class="full-width">
+                    <label asp-for="Address"></label>
+                    <input asp-for="Address" maxlength="500" required />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="/Account/Profile" class="nav-btn back">Back to Profile</a>
+                <button type="submit" class="nav-btn save">Save</button>
+            </div>
+        </form>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="success-message" style="margin-top:15px;color:green;">
+                @TempData["Success"]
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<style>
+    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family:'Segoe UI', sans-serif; }
+    .profile-container { flex:1; width:80%; max-width:950px; margin:40px auto; }
+    .profile-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .headline { font-size:26px; font-weight:700; color:#6c63ff; letter-spacing:1px; }
+    .profile-card { background:#fff; padding:40px; border-radius:20px; box-shadow:0 8px 25px rgba(0,0,0,0.12); }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+    .form-grid .full-width { grid-column:span 2; }
+    label { font-size:14px; color:#555; margin-bottom:5px; display:block; }
+    input, select { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; }
+    .btn-group { margin-top:40px; display:flex; gap:10px; }
+    .nav-btn { padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; text-decoration:none; cursor:pointer; border:none; transition:0.3s; }
+    .nav-btn.save { background:#28a745; color:white; }
+    .nav-btn.save:hover { background:#1e7e34; }
+    .nav-btn.back { background:#6c63ff; color:white; }
+    .nav-btn.back:hover { background:#4a47c6; }
+    footer { margin-top:auto; padding:15px 0; background:#f8f9fa; text-align:center; color:#555; border-top:1px solid #ddd; }
+    .text-danger { color:red; font-size:13px; }
+</style>

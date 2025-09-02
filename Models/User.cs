@@ -24,7 +24,10 @@ namespace Beacon.Models
         public string? Gender { get; set; }         
 
         [StringLength(500)]
-        public string? Address { get; set; }         
+        public string? Address { get; set; }
+
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
 
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

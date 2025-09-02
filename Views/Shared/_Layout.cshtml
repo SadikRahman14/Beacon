@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using Beacon.Models
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
@@ -11,63 +11,53 @@
     <title>@ViewData["Title"] - Beacon</title>
     <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true" />
 </head>
-<body id="body" class="flex min-h-screen flex-col text-gray-900 transition-colors duration-300 dark:text-gray-100">
+<body id="body" class="flex min-h-screen flex-col text-gray-900 transition-colors duration-300">
 
     <!-- Navbar -->
-    <header class="bg-white shadow-md dark:bg-gray-800">
-        <nav class="mx-auto flex items-center justify-between p-4">
-            <!-- Logo -->
-            <a asp-area="" asp-controller="Home" asp-action="Index"
-               class="text-3xl font-extrabold text-indigo-600 transition hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
-                Beacon
-            </a>
-
-       
-            <!-- Center Navigation Links -->
-            <div class="hidden md:flex items-center space-x-6">
-                <a asp-controller="Home" asp-action="Index"
-                   class="px-4 py-2 rounded-lg text-sm font-medium
-              text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700
-              dark:text-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-indigo-300 transition">
-                    Home
-                </a>
-                <a asp-controller="Updates" asp-action="Index"
-                   class="px-4 py-2 rounded-lg text-sm font-medium
-              text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700
-              dark:text-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-indigo-300 transition">
-                    Dev Updates
-                </a>
-                <a asp-controller="Complaints" asp-action="Index"
-                   class="px-4 py-2 rounded-lg text-sm font-medium
-              text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700
-              dark:text-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-indigo-300 transition">
-                    Complaints
-                </a>
-                <a asp-controller="Alerts" asp-action="Index"
-                   class="px-4 py-2 rounded-lg text-sm font-medium
-              text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700
-              dark:text-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-indigo-300 transition">
-                    Alert Posts
-                </a>
-                <a asp-controller="FAQs" asp-action="Index"
-                   class="px-4 py-2 rounded-lg text-sm font-medium
-              text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700
-              dark:text-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-indigo-300 transition">
-                    FAQs
-                </a>
-            </div>
-
-
-            <!-- Right-side user menu -->
+    <header class="shadow-md">
+        <nav class="navbar-fixed mx-auto flex items-center justify-between p-4">
             <div class="flex items-center gap-4">
                 @if (SignInManager.IsSignedIn(User))
                 {
                     var me = await UserManager.GetUserAsync(User);
-                    var initial = (me?.FirstName?.Length ?? 0) > 0 ? me!.FirstName![0].ToString().ToUpper() : (me?.Email ?? "?");
+                    var initial = (me?.FirstName?.Length ?? 0) > 0
+                    ? me!.FirstName![0].ToString().ToUpper()
+                    : (me?.Email?.FirstOrDefault().ToString().ToUpper() ?? "?");
 
-                    <details class="relative z-50" data-menu tabindex="0">
-                        <!-- Dropdown -->
-                        <div class="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                    <div class="relative" id="userMenuWrapper">
+                        <button type="button" id="userAvatarBtn"
+                                class="relative flex items-center justify-center rounded-full ring-1 ring-black/5 focus:outline-none dark:ring-white/10"
+                                style="width:32px;height:32px;overflow:hidden;"
+                                aria-expanded="false"
+                                onclick="(function(btn){
+                                const wrap=btn.closest('#userMenuWrapper');
+                                const menu=wrap.querySelector('.user-menu-dropdown');
+                                const open=menu.hasAttribute('hidden'); // closed=>
+                            true
+                            if (open) { menu.removeAttribute('hidden'); btn.setAttribute('aria-expanded','true'); }
+                            else { menu.setAttribute('hidden',''); btn.setAttribute('aria-expanded','false'); }
+                            })(this)">
+                            @if (!string.IsNullOrWhiteSpace(me?.ProfileImageUrl))
+                            {
+                                <img src="@me.ProfileImageUrl"
+                                     alt="@(me?.FirstName ?? me?.Email ?? "User")"
+                                     style="width:32px;height:32px;border-radius:9999px;object-fit:cover;display:block;"
+                                     loading="lazy" referrerpolicy="no-referrer" />
+                            }
+                            else
+                            {
+                                <span class="flex items-center justify-center text-xs font-semibold text-white"
+                                      style="width:32px;height:32px;border-radius:9999px;background:linear-gradient(135deg,#6366f1,#7c3aed);">
+                                    @initial
+                                </span>
+                            }
+                        </button>
+
+                        <div class="user-menu-dropdown absolute right-0 z-50 mt-2 w-48 rounded-xl border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                             hidden>
+                            <div class="truncate px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                                @(me?.Email)
+                            </div>
                             <a asp-controller="Account" asp-action="Profile"
                                class="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">
                                 Profile
@@ -80,26 +70,48 @@
                                 </button>
                             </form>
                         </div>
-                    </details>
-                }
-                else
-                {
-                    <a asp-controller="Account" asp-action="Login"
-                       class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                        Sign in
-                    </a>
+                    </div>
                 }
             </div>
+
+
+            
+            <!-- Logo -->
+            <a asp-area="" asp-controller="Home" asp-action="Index"
+               class="text-3xl font-extrabold text-indigo-600 transition hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
+                Beacon
+            </a> 
+            
         </nav>
     </header>
+   
+    <style>
+        .navbar-fixed {
+            background-color: #334155;
+            color: #fff;
+        }
+            .navbar-fixed a {
+                color: #fff;
+            }
+
+                .navbar-fixed a:hover {
+                    color: rgba(255,255,255,.8);
+                }
+
+        .dark .navbar-fixed {
+            background-color: #334155;
+        }
+    </style>
 
 
-    <!-- Main Content -->
-    <main role="main" class="flex-grow">
+    <main role="main"
+          class="flex-grow bg-gray-400 dark:bg-gray-800"
+          style="padding-block: 2.5rem;">
+        @* 2.5rem top & bottom *@
         @RenderBody()
     </main>
 
-    <!-- Dark Mode Toggle -->
+
     <button id="dark-toggle"
             class="fixed bottom-24 right-6 rounded-full bg-red-900 p-2 text-2xl text-white shadow-xl transition-colors duration-300 hover:bg-red-400 dark:bg-red-500 dark:hover:bg-red-500">
         🌙
@@ -107,13 +119,7 @@
 
     <!-- Footer -->
     <footer class="mt-auto w-full bg-gray-800 py-8 text-gray-300 dark:bg-gray-900 dark:text-gray-400">
-        <div class="container mx-auto flex flex-col items-center justify-between gap-2 md:flex-row">
-            <p class="text-sm">&copy; 2025 - <span class="font-semibold text-white dark:text-gray-100">Beacon</span></p>
-            <a asp-area="" asp-controller="Home" asp-action="Privacy"
-               class="text-sm font-medium transition hover:text-white dark:hover:text-gray-200">
-                Privacy
-            </a>
-        </div>
+        
     </footer>
 
     @await RenderSectionAsync("Scripts", required: false)
@@ -121,28 +127,52 @@
     <script>
         const toggleButton = document.getElementById('dark-toggle');
         const body = document.getElementById('body');
-        if (localStorage.getItem('theme') === 'dark') {
+
+        if(localStorage.getItem('theme') === 'dark') {
             body.classList.add('dark');
             toggleButton.textContent = '☀️';
         }
+
         toggleButton.addEventListener('click', () => {
             body.classList.toggle('dark');
-            if (body.classList.contains('dark')) {
+
+            if(body.classList.contains('dark')){
                 localStorage.theme = 'dark'
                 toggleButton.textContent = '☀️';
-            } else {
+            }
+            else{
                 localStorage.theme = 'light'
                 toggleButton.textContent = '🌙';
             }
         });
     </script>
 
+    
     <script>
-        document.addEventListener('click', (e) => {
-            document.querySelectorAll('details[data-menu]').forEach(d => {
-                if (!d.contains(e.target)) d.removeAttribute('open');
-            });
-        });
+        const avatarBtn = document.getElementById('userAvatarBtn');
+        const dropdown = document.getElementById('userDropdown');
+
+        if (avatarBtn && dropdown) {
+          avatarBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            dropdown.classList.toggle('hidden');
+          });
+
+          document.addEventListener('click', (e) => {
+            if (!dropdown.classList.contains('hidden') &&
+                !dropdown.contains(e.target) &&
+                e.target !== avatarBtn) {
+              dropdown.classList.add('hidden');
+            }
+          });
+
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+              dropdown.classList.add('hidden');
+            }
+          });
+        }
     </script>
+
 </body>
 </html>

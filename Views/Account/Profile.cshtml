@@ -53,43 +53,38 @@
     </div>
 </div>
 
-<footer></footer>
+
 
 @section Scripts {
     <script>
+        
+
+        // ----- Image upload preview + POST (unchanged) -----
         const input = document.getElementById('profileImageInput');
         const preview = document.getElementById('profilePreview');
 
-        input.addEventListener('change', function () {
-            const file = this.files[0];
+        input?.addEventListener('change', function () {
+            const file = this.files?.[0];
             if (!file) return;
 
-            // Show preview immediately
             const reader = new FileReader();
-            reader.onload = function (e) {
-                preview.src = e.target.result;
-            };
+            reader.onload = function (e) { preview.src = e.target.result; };
             reader.readAsDataURL(file);
 
-            // Prepare form data for AJAX
             const formData = new FormData();
             formData.append('ProfileImage', file);
 
-            // Get anti-forgery token
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenEl ? tokenEl.value : '';
 
             fetch('@Url.Action("UploadProfileImage", "Account")', {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'RequestVerificationToken': token
-                }
+                headers: token ? { 'RequestVerificationToken': token } : {}
             })
             .then(res => res.json())
             .then(data => {
-                if (!data.success) {
-                    alert('Upload failed: ' + data.error);
-                }
+                if (!data.success) alert('Upload failed: ' + (data.error || 'Unknown error'));
             })
             .catch(err => console.error(err));
         });
@@ -97,25 +92,89 @@
 }
 
 <style>
-    body { 
-        min-height:100vh; display:flex; flex-direction:column; margin:0;
-        font-family:'Segoe UI', sans-serif; background:#fafafa;
+    /* ---------- THEME VARIABLES ---------- */
+    :root {
+        --bg: #fafafa;
+        --text: #1f2937; /* gray-800 */
+        --muted-text: #374151; /* gray-700 */
+        --card: #ffffff;
+        --card-muted: #f4f4f4;
+        --border: #e5e7eb;
+        --brand: #6c63ff;
+        --brand-hover: #4a47c6;
+        --success: #28a745;
+        --success-hover: #1e7e34;
+        --shadow: 0 8px 25px rgba(0,0,0,0.12);
     }
 
-    .profile-container { 
-        flex:1; display:flex; justify-content:center; align-items:flex-start; 
-        padding:80px 40px 40px;
+    .dark {
+        --bg: #0b1220; /* deep navy */
+        --text: #e5e7eb; /* gray-200 */
+        --muted-text: #cbd5e1; /* slate-300 */
+        --card: #0f172a; /* slate-900 */
+        --card-muted: #0b1328; /* slightly darker panel */
+        --border: #1e293b; /* slate-800 */
+
+        --brand: #8b86ff;
+        --brand-hover: #adaaff;
+        --success: #34d399; /* emerald-400 */
+        --success-hover: #10b981; /* emerald-500 */
+
+        --shadow: 0 12px 28px rgba(0,0,0,0.45);
     }
 
-    .profile-card { 
-        background:#fff; display:flex; border-radius:12px; 
-        box-shadow:0 8px 25px rgba(0,0,0,0.12); max-width:900px; width:100%; 
-        overflow:hidden; 
+
+    html, body {
+        height: 100%;
     }
 
-    .profile-left { 
-        flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; 
-        background:#f4f4f4; padding:40px 20px; margin-top: -20px;
+    body {
+        min-height: 100vh;
+
+        margin: 0;
+        font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        transition: background-color .25s ease, color .25s ease;
+    }
+
+
+    
+
+    
+
+    
+
+    /* ---------- LAYOUT ---------- */
+    .profile-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 32px 40px 40px;
+    }
+
+    .profile-card {
+        background: var(--card);
+        display: flex;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        max-width: 900px;
+        width: 100%;
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+
+    .profile-left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: var(--card-muted);
+        padding: 40px 20px;
+        margin-top: -20px;
+        border-right: 1px solid var(--border);
     }
 
     .profile-pic-wrapper {
@@ -123,11 +182,12 @@
         height: 220px;
         border-radius: 50%;
         overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow);
         margin-bottom: 15px;
         display: flex;
         justify-content: center;
         align-items: center;
+        background: #00000010;
     }
 
     .profile-pic {
@@ -148,42 +208,68 @@
     }
 
     .file-btn {
-        background: #6c63ff;
+        background: indigo;
         color: #fff;
         padding: 10px 20px;
         border-radius: 25px;
         cursor: pointer;
         font-weight: 600;
         transition: 0.3s;
+        border: 1px solid transparent;
     }
 
-    .file-btn:hover {
-        background:#4a47c6;
+        .file-btn:hover {
+            background: pink;
+            color: #000;
+        }
+
+    /* ---------- RIGHT SIDE ---------- */
+    .profile-right {
+        flex: 2;
+        padding: 30px 40px;
     }
 
-    .profile-right { flex:2; padding:30px 40px; }
-
-    .headline { 
-        font-size:28px; font-weight:700; color:#6c63ff; 
-        margin-bottom:20px; letter-spacing:1px;
+    .headline {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--brand);
+        margin-bottom: 20px;
+        letter-spacing: 1px;
     }
 
-    .details p { margin:10px 0; color:#333; font-size:15px; }
-
-    .btn-group { margin-top:50px; }
-
-    .nav-btn { 
-        background:#6c63ff; color:#fff; padding:10px 18px; 
-        border-radius:6px; text-decoration:none; margin-right:15px;
-        transition:0.3s;
+    .details p {
+        margin: 10px 0;
+        color: var(--muted-text);
+        font-size: 15px;
     }
 
-    .nav-btn:hover { background:#4a47c6; }
-    .nav-btn.edit { background:#28a745; }
-    .nav-btn.edit:hover { background:#1e7e34; }
-
-    footer { 
-        margin-top:auto; padding:15px 0; background:#f8f9fa; 
-        text-align:center; color:#555; border-top:1px solid #ddd;
+    .btn-group {
+        margin-top: 50px;
     }
-</style>
+
+    .nav-btn {
+        background: brown;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-right: 15px;
+        transition: 0.3s;
+        border: 1px solid transparent;
+    }
+
+    .nav-btn:hover {
+            background: pink;
+            color: #000;
+    }
+
+    .nav-btn.edit {
+            background: CadetBlue;
+    }
+
+    .nav-btn.edit:hover {
+        background: var(--success-hover);
+    }
+
+    
+ }</style>

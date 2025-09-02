@@ -3,6 +3,7 @@ using Beacon.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Beacon.Controllers
 {
@@ -11,11 +12,13 @@ namespace Beacon.Controllers
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager)
+        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager, IConfiguration configuration)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _configuration = configuration;
         }
 
         [Authorize]
@@ -40,6 +43,82 @@ namespace Beacon.Controllers
             return View(user);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            var props = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(props, provider);
+        }
+
+        // 2) Handle the callback from Google
+        [HttpGet]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            returnUrl ??= Url.Action("Index", "Home");
+
+            if (remoteError != null)
+            {
+                TempData["Error"] = $"External provider error: {remoteError}";
+                return RedirectToAction("Login");
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["Error"] = "Error loading external login information.";
+                return RedirectToAction("Login");
+            }
+
+            // Try direct sign-in (user already linked)
+            var signInResult = await _signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+            if (signInResult.Succeeded)
+                return LocalRedirect(returnUrl!);
+
+            // New user: create account and link external login
+            var email = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email)
+                        ?? info.Principal.FindFirstValue("email");
+
+            if (email == null)
+            {
+                TempData["Error"] = "Google account has no email.";
+                return RedirectToAction("Login");
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    UserName = email,
+                    EmailConfirmed = true
+                };
+                var createResult = await _userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    foreach (var e in createResult.Errors)
+                        ModelState.AddModelError(string.Empty, e.Description);
+                    return RedirectToAction("Login");
+                }
+            }
+
+            var addLoginResult = await _userManager.AddLoginAsync(user, info);
+            if (!addLoginResult.Succeeded)
+            {
+                foreach (var e in addLoginResult.Errors)
+                    ModelState.AddModelError(string.Empty, e.Description);
+                return RedirectToAction("Login");
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            return LocalRedirect(returnUrl!);
+        }
+
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -57,6 +136,9 @@ namespace Beacon.Controllers
             user.Gender = model.Gender;
             user.Address = model.Address;
             user.UpdatedAt = DateTime.UtcNow;
+
+            user.Latitude = model.Latitude;    
+            user.Longitude = model.Longitude;
 
             if (ProfileImage != null && ProfileImage.Length > 0)
             {

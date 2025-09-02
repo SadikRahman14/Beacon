@@ -1,4 +1,4 @@
-@model Beacon.Models.User
+﻿@model Beacon.Models.User
 @{
     ViewData["Title"] = "Edit Profile";
 }
@@ -37,9 +37,31 @@
                     </select>
                     <span asp-validation-for="Gender" class="text-danger"></span>
                 </div>
+
+                <!-- Address with instruction + actions -->
                 <div class="full-width">
                     <label asp-for="Address"></label>
-                    <input asp-for="Address" maxlength="500" required />
+
+                    <!-- Instruction -->
+                    <div class="addr-instruction">
+                        Click <b>Open Google Maps</b> →  Search & pick your exact address → Copy the address text → Click <b>Paste</b> below.
+                    </div>
+
+                    <!-- Address input + action buttons -->
+                    <div class="addr-row">
+                        <input asp-for="Address" id="addressInput" maxlength="500" required />
+                        <div class="addr-actions">
+                            <button type="button" id="openMapsBtn" class="nav-btn open-maps" title="Open Google Maps in a new tab">
+                                Open Google Maps
+                            </button>
+                            <button type="button" id="pasteBtn" class="nav-btn paste" title="Paste from clipboard">
+                                Paste
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pasteStatus" class="paste-status" aria-live="polite"></div>
+
                     <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
             </div>
@@ -60,25 +82,303 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        (function () {
+          const input  = document.getElementById('addressInput');
+          const openBtn = document.getElementById('openMapsBtn');
+          const pasteBtn = document.getElementById('pasteBtn');
+          const status = document.getElementById('pasteStatus');
+
+
+          openBtn?.addEventListener('click', () => {
+            const q = (input?.value || '').trim();
+            const url = q
+              ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+              : `https://www.google.com/maps`;
+            window.open(url, '_blank', 'noopener,noreferrer');
+          });
+
+
+          async function pasteFromClipboard() {
+            if (!navigator.clipboard || !navigator.clipboard.readText) {
+              status.textContent = 'Clipboard not available in this browser. Please paste manually (Ctrl/Cmd + V).';
+              status.className = 'paste-status warn';
+              return;
+            }
+            try {
+              const text = await navigator.clipboard.readText();
+              if (text) {
+                input.value = text.trim();
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                status.textContent = 'Pasted address from clipboard.';
+                status.className = 'paste-status ok';
+                // brief success flash
+                setTimeout(() => { status.textContent = ''; status.className = 'paste-status'; }, 2500);
+              } else {
+                status.textContent = 'Clipboard is empty.';
+                status.className = 'paste-status warn';
+              }
+            } catch (err) {
+              status.textContent = 'Permission denied to read clipboard. Paste manually (Ctrl/Cmd + V).';
+              status.className = 'paste-status warn';
+            }
+          }
+
+          pasteBtn?.addEventListener('click', pasteFromClipboard);
+        })();
+    </script>
 }
 
 <style>
-    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family:'Segoe UI', sans-serif; }
-    .profile-container { flex:1; width:80%; max-width:950px; margin:40px auto; }
-    .profile-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .headline { font-size:26px; font-weight:700; color:#6c63ff; letter-spacing:1px; }
-    .profile-card { background:#fff; padding:40px; border-radius:20px; box-shadow:0 8px 25px rgba(0,0,0,0.12); }
-    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
-    .form-grid .full-width { grid-column:span 2; }
-    label { font-size:14px; color:#555; margin-bottom:5px; display:block; }
-    input, select { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; }
-    .btn-group { margin-top:40px; display:flex; gap:10px; }
-    .nav-btn { padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; text-decoration:none; cursor:pointer; border:none; transition:0.3s; }
-    .nav-btn.save { background:#28a745; color:white; }
-    .nav-btn.save:hover { background:#1e7e34; }
-    .nav-btn.back { background:#6c63ff; color:white; }
-    .nav-btn.back:hover { background:#4a47c6; }
-    footer { margin-top:auto; padding:15px 0; background:#f8f9fa; text-align:center; color:#555; border-top:1px solid #ddd; }
-    .text-danger { color:red; font-size:13px; }
-</style>
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .profile-container {
+        flex: 1;
+        width: 80%;
+        max-width: 950px;
+        margin: 40px auto;
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .headline {
+        font-size: 26px;
+        font-weight: 700;
+        color: #6c63ff;
+        letter-spacing: 1px;
+    }
+
+    .profile-card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+        .form-grid .full-width {
+            grid-column: span 2;
+        }
+
+    label {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .btn-group {
+        margin-top: 40px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: 0.25s;
+    }
+
+    .nav-btn.save {
+        background: #28a745;
+        color: #fff;
+    }
+
+    .nav-btn.save:hover {
+        background: #1e7e34;
+    }
+
+    .nav-btn.back {
+        background: #6c63ff;
+        color: #fff;
+    }
+
+    .nav-btn.back:hover {
+        background: #4a47c6;
+    }
+
+    /* Address helpers */
+    .addr-instruction {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 4px 0 8px;
+    }
+
+    .addr-row {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .addr-row input {
+        flex: 1;
+    }
+
+    .addr-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .nav-btn.open-maps {
+        background: #2563eb;
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .nav-btn.open-maps:hover {
+        background: #1d4ed8;
+    }
+
+    .nav-btn.paste {
+        background: #10b981;
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .nav-btn.paste:hover {
+        background: #0ea371;
+    }
+
+    .paste-status {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #6b7280;
+        min-height: 1em;
+    }
+
+    .paste-status.ok {
+        color: #059669;
+    }
+
+    .paste-status.warn {
+        color: #b45309;
+    }
+
+    footer {
+        margin-top: auto;
+        padding: 15px 0;
+        background: #f8f9fa;
+        text-align: center;
+        color: #555;
+        border-top: 1px solid #ddd;
+    }
+
+    .text-danger {
+        color: red;
+        font-size: 13px;
+    }
+
+    /* DARK MODE */
+    /* DARK MODE (class-based) */
+    .dark {
+        background-color: #121212;
+        color: #e5e5e5;
+    }
+
+        .dark .profile-card {
+            background-color: #1f1f1f;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+        }
+
+        .dark .headline {
+            color: #a78bfa;
+        }
+
+        .dark label {
+            color: #ccc;
+        }
+
+        .dark input, .dark select {
+            background-color: #2b2b2b;
+            border: 1px solid #444;
+            color: #e5e5e5;
+        }
+
+        .dark .nav-btn.back {
+            background-color: #7c3aed;
+        }
+
+        .dark .nav-btn.back:hover {
+            background-color: #5b21b6;
+        }
+
+        .dark .nav-btn.save {
+            background-color: #16a34a;
+        }
+
+            .dark .nav-btn.save:hover {
+                background-color: #15803d;
+            }
+
+        .dark .nav-btn.open-maps {
+            background-color: #1d4ed8;
+        }
+
+        .dark .nav-btn.open-maps:hover {
+            background-color: #1e40af;
+        }
+
+        .dark .nav-btn.paste {
+            background-color: #059669;
+        }
+
+        .dark .nav-btn.paste:hover {
+            background-color: #047857;
+        }
+
+        .dark .addr-instruction,
+        .dark .paste-status {
+            color: #9ca3af;
+        }
+
+        .dark .paste-status.ok {
+            color: #10b981;
+        }
+
+        .dark .paste-status.warn {
+            color: #f59e0b;
+        }
+
+        .dark .text-danger {
+            color: #f87171;
+        }
+
+        .dark footer {
+            background-color: #1a1a1a;
+            color: #ccc;
+            border-top: 1px solid #333;
+        }
+ </style>
+

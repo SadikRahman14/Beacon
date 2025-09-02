@@ -5,14 +5,21 @@
     Layout = "_Layout";
 }
 
-
-<div class="-mx-[calc(50vw-50%)] w-screen bg-gray-50 dark:bg-gray-900">
+<div class="-mx-[calc(50vw-50%)] w-screen">
     <section class="mt-10 flex min-h-[80vh] items-center justify-center px-4">
         <!-- Card -->
-        <div class="w-full max-w-md rounded-2xl bg-gray-200 p-6 shadow-lg outline-amber-900 ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10 sm:p-8">
+
+        
+        <div class="w-full max-w-md rounded-2xl border border-gray-300 bg-white p-6 shadow-lg ring-1 ring-black/10
+            dark:border-gray-600 dark:bg-gray-800 dark:ring-white/10 sm:p-8">
+
             <h1 class="text-center text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-3xl">
-                Welcome to <span class="text-indigo-600 dark:text-indigo-400">Beacon</span>
+                 <span class="text-indigo-600 dark:text-indigo-400"> L O G I N</span>
             </h1>
+
+            <img src="~/images/Lighthouse-bro (2).png" alt="Register Banner"
+                 class="h-100 mb-4 w-full rounded-xl object-cover"
+                 asp-append-version="true" />
 
             <form asp-action="Login" asp-controller="Account" method="post" class="mt-6 space-y-5" novalidate>
                 @Html.AntiForgeryToken()
@@ -20,22 +27,18 @@
                 <div asp-validation-summary="ModelOnly" class="text-sm text-red-600 dark:text-red-400"></div>
 
                 <div>
-                    <label asp-for="Email" class="block text-sm font-medium text-gray-700 dark:text-gray-200"></label>
-                    <input asp-for="Email" autocomplete="Email"
+                    <input asp-for="Email" autocomplete="email" placeholder="Email"
                            class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/50 dark:text-gray-100 dark:placeholder-gray-500" />
                     <span asp-validation-for="Email" class="mt-1 block text-sm text-red-600 dark:text-red-400"></span>
                 </div>
 
                 <div>
-                    <label asp-for="Password" class="block text-sm font-medium text-gray-700 dark:text-gray-200"></label>
-                    <input asp-for="Password" autocomplete="current-password"
+                    <input asp-for="Password" autocomplete="current-password" placeholder="Password"
                            class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/50 dark:text-gray-100 dark:placeholder-gray-500" />
                     <span asp-validation-for="Password" class="mt-1 block text-sm text-red-600 dark:text-red-400"></span>
                 </div>
 
                 <div class="flex items-center justify-between">
-                   
-
                     <a asp-action="Register"
                        class="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300">
                         Don’t have an account?
@@ -46,29 +49,34 @@
                         class="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     Sign In
                 </button>
+            </form>
 
-                <div class="relative">
+                <!-- Divider -->
+                <div class="relative space-y-5">
                     <div class="absolute inset-0 flex items-center">
                         <span class="w-full border-t border-gray-200 dark:border-gray-700"></span>
                     </div>
                     <div class="relative flex justify-center">
                         <span class="bg-white px-3 text-xs uppercase tracking-wider text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                            or continue with
+                            or 
                         </span>
                     </div>
                 </div>
 
-                <button type="button"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/50 dark:text-gray-100 dark:hover:bg-gray-900">
-                    <!-- Optional Google icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.6 31.9 29.2 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 12.3 3 3 12.3 3 24s9.3 21 21 21 21-9.3 21-21c0-1.3-.1-2.7-.4-4.5z" /><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16.1 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 16 3 9.2 7.6 6.3 14.7z" /><path fill="#4CAF50" d="M24 45c5.1 0 9.8-1.9 13.3-5.1l-6.1-5c-2 1.4-4.6 2.1-7.2 2.1-5.1 0-9.4-3.1-11-7.5l-6.6 5.1C9.2 40.3 16 45 24 45z" /><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 2.9-3.2 5.2-6.3 6.5l6.1 5C38.7 37.8 42 31.8 42 24c0-1.3-.1-2.7-.4-4.5z" /></svg>
-                    Sign in with Google
-                </button>
 
-                <p class="text-center text-xs text-gray-500 dark:text-gray-400">
-                    By continuing you agree to our <a href="#" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">Terms &amp; Conditions</a>.
-                </p>
-            </form>
+            <form asp-action="ExternalLogin" asp-controller="Account" method="post" class="mt-6 space-y-1">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="provider" value="Google" />
+                    <input type="hidden" name="returnUrl" value="@(ViewData["ReturnUrl"] ?? Url.Action("Index", "Home"))" />
+                    <button type="submit"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900/50 dark:text-gray-100 dark:hover:bg-gray-900">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.6 31.9 29.2 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 12.3 3 3 12.3 3 24s9.3 21 21 21 21-9.3 21-21c0-1.3-.1-2.7-.4-4.5z" /><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16.1 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 16 3 9.2 7.6 6.3 14.7z" /><path fill="#4CAF50" d="M24 45c5.1 0 9.8-1.9 13.3-5.1l-6.1-5c-2 1.4-4.6 2.1-7.2 2.1-5.1 0-9.4-3.1-11-7.5l-6.6 5.1C9.2 40.3 16 45 24 45z" /><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 2.9-3.2 5.2-6.3 6.5l6.1 5C38.7 37.8 42 31.8 42 24c0-1.3-.1-2.7-.4-4.5z" /></svg>
+                        Sign in with Google
+                    </button>
+                </form>
+
+            
+
         </div>
     </section>
 </div>

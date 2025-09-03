@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
 @using Beacon.Models
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
@@ -16,6 +16,13 @@
     <!-- Navbar -->
     <header class="shadow-md">
         <nav class="navbar-fixed mx-auto flex items-center justify-between p-4">
+            <!-- Brand Logo/Name (LEFT) -->
+            <a asp-area="" asp-controller="Home" asp-action="Index"
+               class="text-3xl font-extrabold text-indigo-600 transition hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
+                Beacon
+            </a>
+
+            <!-- User Profile (RIGHT) -->
             <div class="flex items-center gap-4">
                 @if (SignInManager.IsSignedIn(User))
                 {
@@ -30,13 +37,12 @@
                                 style="width:32px;height:32px;overflow:hidden;"
                                 aria-expanded="false"
                                 onclick="(function(btn){
-                                const wrap=btn.closest('#userMenuWrapper');
-                                const menu=wrap.querySelector('.user-menu-dropdown');
-                                const open=menu.hasAttribute('hidden'); // closed=>
-                            true
-                            if (open) { menu.removeAttribute('hidden'); btn.setAttribute('aria-expanded','true'); }
-                            else { menu.setAttribute('hidden',''); btn.setAttribute('aria-expanded','false'); }
-                            })(this)">
+                                    const wrap=btn.closest('#userMenuWrapper');
+                                    const menu=wrap.querySelector('.user-menu-dropdown');
+                                    const open=menu.hasAttribute('hidden');
+                                    if (open) { menu.removeAttribute('hidden'); btn.setAttribute('aria-expanded','true'); }
+                                    else { menu.setAttribute('hidden',''); btn.setAttribute('aria-expanded','false'); }
+                                })(this)">
                             @if (!string.IsNullOrWhiteSpace(me?.ProfileImageUrl))
                             {
                                 <img src="@me.ProfileImageUrl"
@@ -73,30 +79,22 @@
                     </div>
                 }
             </div>
-
-
-            
-            <!-- Logo -->
-            <a asp-area="" asp-controller="Home" asp-action="Index"
-               class="text-3xl font-extrabold text-indigo-600 transition hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
-                Beacon
-            </a> 
-            
         </nav>
     </header>
+
    
     <style>
         .navbar-fixed {
             background-color: #334155;
             color: #fff;
         }
-            .navbar-fixed a {
-                color: #fff;
-            }
+        .navbar-fixed a {
+            color: #fff;
+        }
 
-                .navbar-fixed a:hover {
-                    color: rgba(255,255,255,.8);
-                }
+        .navbar-fixed a:hover {
+            color: rgba(255,255,255,.8);
+        }
 
         .dark .navbar-fixed {
             background-color: #334155;
@@ -119,7 +117,7 @@
 
     <!-- Footer -->
     <footer class="mt-auto w-full bg-gray-800 py-8 text-gray-300 dark:bg-gray-900 dark:text-gray-400">
-        
+
     </footer>
 
     @await RenderSectionAsync("Scripts", required: false)

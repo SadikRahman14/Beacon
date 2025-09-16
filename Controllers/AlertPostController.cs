@@ -37,7 +37,7 @@ namespace Beacon.Controllers
         // =======================
         // Details (public)
         // =======================
-        [AllowAnonymous]
+        [Authorize]
         public async Task<IActionResult> Details(string id)
         {
             if (id == null) return NotFound();

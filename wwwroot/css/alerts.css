@@ -1,0 +1,92 @@
+﻿.alert-details {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background: #1e293b; /* dark slate */
+    color: #f8fafc;
+    border-radius: 8px;
+}
+
+.alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #475569;
+    padding-bottom: .5rem;
+    margin-bottom: 1rem;
+}
+
+    .alert-header h2 {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .alert-header .badge {
+        background: #10b981;
+        color: #fff;
+        font-size: .75rem;
+        padding: 0.2rem 0.5rem;
+        margin-left: .5rem;
+        border-radius: 4px;
+    }
+
+    .alert-header .back-link {
+        color: #93c5fd;
+        text-decoration: none;
+    }
+
+.alert-hero {
+    width: 100%;
+    height: 220px;
+    background-color: #334155;
+    background-size: cover;
+    background-position: center;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.alert-meta {
+    font-size: .9rem;
+    margin-bottom: .5rem;
+}
+
+    .alert-meta .type {
+        background: #475569;
+        padding: .2rem .5rem;
+        border-radius: 4px;
+        margin-right: .5rem;
+    }
+
+    .alert-meta .updated {
+        color: #cbd5e1;
+        font-style: italic;
+        margin-left: .5rem;
+    }
+
+.alert-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+}
+
+.alert-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.alert-footer {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #475569;
+    padding-top: 1rem;
+}
+
+.admin-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: .75rem;
+    object-fit: cover;
+}

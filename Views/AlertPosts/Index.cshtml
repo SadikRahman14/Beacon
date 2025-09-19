@@ -83,11 +83,33 @@
                                 </button>
                             </div>
 
-                            <a asp-action="Details" asp-route-id="@alert.AlertId" class="btn btn-hollow">
-                                See details
-                            </a>
+                            <div class="row-actions">
+                                <a asp-action="Details" asp-route-id="@alert.AlertId" class="btn btn-hollow">
+                                    See details
+                                </a>
+                                @if (User.IsInRole("admin"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@alert.AlertId" class="btn btn-primary">
+                                        Edit
+                                    </a>
+                                }
+
+                                @* Admin-only delete *@
+                                @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("admin"))
+                                {
+                                    <form asp-action="Delete"
+                                          asp-route-id="@alert.AlertId"
+                                          method="post"
+                                          class="inline-form"
+                                          onsubmit="return confirm('Delete this alert permanently?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                }
+                            </div>
                         </div>
                     </article>
+                    <hr class="alert-divider" />
                 }
             </div>
         }
@@ -117,20 +139,17 @@
               up.classList.add('active','up');
               down.classList.remove('active','down');
               upC.textContent = String((parseInt(upC.textContent || '0',10) + 1));
-              // TODO: hook backend POST here
             });
 
             down?.addEventListener('click', () => {
               down.classList.add('active','down');
               up.classList.remove('active','up');
               downC.textContent = String((parseInt(downC.textContent || '0',10) + 1));
-              // TODO: hook backend POST here
             });
           });
         })();
     </script>
 }
-
 
 <style>
     /* ===== Theme (CSS variables) ===== */
@@ -144,6 +163,8 @@
         --btn-text: #ffffff;
         --h-text: #ffffff;
         --thumb-border: #1f2937;
+        --danger: #dc2626;
+        --danger-hover: #b91c1c;
     }
 
     .light {
@@ -156,6 +177,8 @@
         --btn-text: #ffffff;
         --h-text: #0f172a;
         --thumb-border: #e5e7eb;
+        --danger: #dc2626;
+        --danger-hover: #b91c1c;
     }
 
     /* ===== Section / Container ===== */
@@ -170,17 +193,19 @@
         padding: 0 24px;
     }
 
-    .header-row {
-        display: flex;
-        align-items: start;
-        justify-content: space-between;
-        gap: 16px;
-    }
-
     .alerts-header {
         max-width: 100%;
         margin: 0 0 28px 0
     }
+
+    .alert-divider {
+        border: none;
+        border-top: 2px dashed #6c63ff; /* purple accent so it’s visible */
+        margin: 32px auto;
+        width: 80%; /* narrower than full width for nicer look */
+    }
+
+
 
     .alerts-title {
         margin: 0;
@@ -190,10 +215,13 @@
         color: var(--h-text);
     }
 
-    .alerts-subtitle {
-        margin: 8px 0 0 0;
-        font-size: 18px;
-        color: var(--muted);
+
+
+
+    .alert-card:not(:last-child) {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 24px;
+        margin-bottom: 24px;
     }
 
     .alerts-empty {
@@ -215,12 +243,7 @@
         gap: 32px;
         border-top: 1px solid var(--border);
         padding-top: 32px;
-    }
-
-    {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
+        justify-content: center
     }
 
     /* ===== Card ===== */
@@ -289,21 +312,21 @@
         color: var(--h-text);
     }
 
-    .alert-heading a {
-        color: inherit;
-        text-decoration: none;
-    }
+        .alert-heading a {
+            color: inherit;
+            text-decoration: none;
+        }
 
-    .alert-heading a:hover {
-        opacity: .9;
-    }
+            .alert-heading a:hover {
+                opacity: .9;
+            }
 
     .alert-content {
         margin: 6px 0 0 0;
         font-size: 14px;
         color: var(--muted);
     }
-    /* clamp 3 lines */
+
     .clamp-3 {
         display: -webkit-box;
         -webkit-line-clamp: 3;
@@ -345,13 +368,13 @@
         color: var(--muted);
     }
 
-    /* Thumbnail (IMAGE SIZE CONTROL HERE) */
+    /* Thumbnail */
     .alert-thumb {
         margin-top: 12px;
         overflow: hidden;
         border: 1px solid var(--thumb-border);
         border-radius: 14px;
-        width:50%;
+        width: 100%;
     }
 
     .alert-thumb img {
@@ -403,11 +426,11 @@
     .vote-btn.active.up {
         box-shadow: 0 0 0 2px rgba(16,185,129,.5);
     }
-    /* emerald ring */
+
     .vote-btn.active.down {
         box-shadow: 0 0 0 2px rgba(244,63,94,.5);
     }
-    /* rose ring */
+
     .vote-btn .icon {
         width: 16px;
         height: 16px;
@@ -419,6 +442,12 @@
         font-weight: 700;
         font-size: 13px;
         color: var(--h-text);
+    }
+
+    .row-actions {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
     }
 
     .btn {
@@ -435,9 +464,9 @@
         transition: transform .05s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
     }
 
-    .btn:active {
-        transform: translateY(1px);
-    }
+        .btn:active {
+            transform: translateY(1px);
+        }
 
     .btn-primary {
         background: var(--accent);
@@ -445,10 +474,10 @@
         box-shadow: 0 6px 16px rgba(79,70,229,.25);
     }
 
-    .btn-primary:hover {
-        background: #4338ca;
-        box-shadow: 0 8px 18px rgba(79,70,229,.35);
-    }
+        .btn-primary:hover {
+            background: #4338ca;
+            box-shadow: 0 8px 18px rgba(79,70,229,.35);
+        }
 
     .btn-hollow {
         background: transparent;
@@ -456,35 +485,28 @@
         border: 1px solid var(--border);
     }
 
-    .btn-hollow:hover {
-        background: rgba(255,255,255,.06);
+        .btn-hollow:hover {
+            background: rgba(255,255,255,.06);
+        }
+
+    /* NEW: admin delete */
+    .btn-danger {
+        background: var(--danger);
+        color: #fff;
     }
 
-    /* Header utility */
-    .theme-toggle {
-        background: transparent;
-        color: var(--h-text);
-        border: 1px solid var(--border);
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+    .inline-form {
+        display: inline;
     }
 
-    .theme-toggle:hover {
-        background: rgba(255,255,255,.06);
-    }
-
-    .theme-icon {
-        width: 16px;
-        height: 16px;
-        display: inline-block;
-        border-radius: 999px;
-        background: var(--accent);
-    }
-
-    .theme-text {
-        font-weight: 800;
-        font-size: 14px;
-    }
-
-    .header-row .btn {
-        align-self: flex-start;
+    /* Footer row */
+    .actions-row {
+        margin-top: 28px;
+        display: flex;
+        justify-content: flex-end;
     }
 </style>

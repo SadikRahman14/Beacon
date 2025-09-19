@@ -1,155 +1,49 @@
-﻿@* Views/AlertPosts/Details.cshtml *@
-@model Beacon.Models.AlertPost
+﻿@model Beacon.Models.AlertPost
 @{
     ViewData["Title"] = "Alert Details";
-    Layout = "_Layout"; // or null if this should be standalone
+    Layout = "_Layout";
 }
 
-@section Styles {
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style"
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;900&family=Spline+Sans:wght@400;500;700&display=swap"
-          onload="this.rel='stylesheet'">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style type="text/tailwindcss">
-        :root {
-            --primary-color: #38e07b;
-        }
+<link rel="stylesheet" href="~/css/alerts.css" asp-append-version="true" />
 
-        body {
-            font-family: "Spline Sans","Noto Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-        }
-
-        .prose :where(img):not(:where([class~=not-prose] *)) {
-            margin: 0;
-        }
-    </style>
-}
-
-<div class="min-h-screen bg-gray-950 text-white">
-    <!-- Header -->
-    <header class="border-b border-gray-800 px-4 py-4 lg:px-10">
-        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="text-[var(--primary-color)] size-6">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="size-6">
-                        <path d="M44 11.27c0 2.74-4.16 5.12-10.31 6.36 6.15 1.24 10.31 3.62 10.31 6.37S39.84 29.12 33.69 30.36C39.84 31.6 44 33.98 44 36.73 44 40.74 35.05 44 24 44S4 40.74 4 36.73c0-2.75 4.16-5.13 10.31-6.37C8.16 29.12 4 26.74 4 24s4.16-5.13 10.31-6.37C8.16 16.4 4 14.01 4 11.27 4 7.26 12.95 4 24 4s20 3.26 20 7.27Z" fill="currentColor" />
-                    </svg>
-                </div>
-                <h2 class="tracking-[-0.015em] text-xl font-bold">Beacon Alerts</h2>
-                <span class="inline-flex items-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-300">Details</span>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <a asp-action="Index" asp-controller="AlertPosts"
-                   class="inline-flex h-10 items-center gap-2 rounded-md bg-gray-800/60 px-3 text-sm text-gray-200 hover:bg-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
-                    Back
-                </a>
-            </div>
-        </div>
+<div class="alert-details">
+    <header class="alert-header">
+        <h2>Beacon Alerts <span class="badge">Details</span></h2>
+        <a asp-action="Index" asp-controller="AlertPosts" class="back-link">← Back</a>
     </header>
 
-    <!-- Main -->
-    <main class="px-4 py-10 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-4xl">
-            <!-- Hero image -->
-            <div class="overflow-hidden rounded-lg border border-gray-800 shadow-lg">
-                <div class="h-60 w-full bg-gray-900 bg-cover bg-center sm:h-80 md:h-96"
-                     style='background-image:url("@(string.IsNullOrWhiteSpace(Model?.AlertImageUrl) ? Url.Content("~/images/placeholder-cover.jpg") : Model.AlertImageUrl)")'>
-                </div>
-            </div>
+    <div class="alert-hero" style="background-image:url('@(string.IsNullOrWhiteSpace(Model?.AlertImageUrl) ? Url.Content("~/images/placeholder-cover.jpg") : Model.AlertImageUrl)')">
+    </div>
 
-            <!-- Title/meta row -->
-            <div class="py-8">
-                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-300">
-                    <span class="inline-flex items-center rounded-full border border-gray-700 bg-gray-800 px-3 py-1">
-                        @Model.Type
-                    </span>
+    <section class="alert-meta">
+        <span class="type">@Model.Type</span>
+        <span class="location">@Model.Location</span>
+        <span class="time">
+            @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt")
+            @if (Model.UpdatedAt > Model.CreatedAt)
+            {
+                <span class="updated">(updated @Model.UpdatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt"))</span>
+            }
+        </span>
+    </section>
 
-                    @if (!string.IsNullOrWhiteSpace(Model.Location))
-                    {
-                        <span class="inline-flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5Z" /></svg>
-                            @Model.Location
-                        </span>
-                    }
+    <h1 class="alert-title">@Model.Type — Alert</h1>
+    <p class="alert-content">@Model.Content</p>
 
-                    <span class="inline-flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H5V8h14Zm-7-9h5v2h-5Z" /></svg>
-                        @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt")
-                    </span>
-
-                    @if (Model.UpdatedAt > Model.CreatedAt)
-                    {
-                        <span class="inline-flex items-center gap-1 text-gray-400">
-                            (updated @Model.UpdatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt"))
-                        </span>
-                    }
-                </div>
-
-                <h1 class="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                    @Model.Type — Alert
-                </h1>
-
-                @* Short preview line from content *@
-                @if (!string.IsNullOrWhiteSpace(Model.Content))
-                {
-                    <p class="mt-4 line-clamp-3 text-lg leading-relaxed text-gray-300">
-                        @Model.Content
-                    </p>
-                }
-            </div>
-
-            <!-- Content -->
-            <article class="prose prose-invert max-w-none prose-a:text-[var(--primary-color)] prose-headings:scroll-mt-20">
-                @* If you later store HTML content, replace with @Html.Raw(Model.Content) after sanitizing *@
-                <p class="whitespace-pre-line leading-relaxed text-gray-200">@Model.Content</p>
-            </article>
-
-            <!-- Author/Admin block -->
-            <div class="mt-10 border-t border-gray-800 pt-8">
-                <div class="flex items-center gap-4">
-                    @{
-                        var avatar = Model?.Admin?.ProfileImageUrl;
-                        var avatarUrl = string.IsNullOrWhiteSpace(avatar)
-                        ? Url.Content("~/images/avatar-placeholder.png")
-                        : avatar;
-                        var adminName = $"{Model?.Admin?.FirstName} {Model?.Admin?.LastName}".Trim();
-                        if (string.IsNullOrWhiteSpace(adminName)) adminName = Model?.Admin?.UserName ?? "Administrator";
-                        var adminRole = Model?.Admin?.Role ?? "admin";
-                    }
-                    <div class="size-12 rounded-full bg-cover bg-center" style='background-image:url("@avatarUrl")'></div>
-                    <div>
-                        <p class="font-semibold">@adminName</p>
-                        <p class="text-sm capitalize text-gray-400">@adminRole</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="mt-10 flex flex-wrap gap-3">
-                <a asp-action="Index" asp-controller="AlertPosts"
-                   class="inline-flex h-11 items-center gap-2 rounded-md bg-gray-800/60 px-4 text-sm text-gray-200 hover:bg-gray-800">
-                    ← All Alerts
-                </a>
-
-                @* Example: Edit/Delete for admins *@
-                @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("admin") || User.IsInRole("superadmin")))
-                {
-                    <a asp-action="Edit" asp-route-id="@Model.AlertId"
-                       class="bg-[var(--primary-color)]/90 inline-flex h-11 items-center gap-2 rounded-md px-4 text-sm font-semibold text-gray-900 hover:bg-[var(--primary-color)]">
-                        Edit
-                    </a>
-
-                    <form method="post" asp-action="Delete" asp-route-id="@Model.AlertId" onsubmit="return confirm('Delete this alert?');">
-                        <button type="submit"
-                                class="inline-flex h-11 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-semibold hover:bg-red-500">
-                            Delete
-                        </button>
-                    </form>
-                }
-            </div>
+    <footer class="alert-footer">
+        @{
+            var avatar = Model?.Admin?.ProfileImageUrl;
+            var avatarUrl = string.IsNullOrWhiteSpace(avatar)
+            ? Url.Content("~/images/avatar-placeholder.png")
+            : avatar;
+            var adminName = $"{Model?.Admin?.FirstName} {Model?.Admin?.LastName}".Trim();
+            if (string.IsNullOrWhiteSpace(adminName)) adminName = Model?.Admin?.UserName ?? "Administrator";
+            var adminRole = Model?.Admin?.Role ?? "admin";
+        }
+        <img src="@avatarUrl" alt="@adminName" class="admin-avatar" />
+        <div class="admin-info">
+            <strong>@adminName</strong>
+            <p>A D M I N</p>
         </div>
-    </main>
+    </footer>
 </div>

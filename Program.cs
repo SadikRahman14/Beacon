@@ -6,12 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- DB ---
+var connectionString = builder.Configuration.GetConnectionString("default");
+builder.Services.AddDbContext<AppDbContext>(opts => opts.UseSqlServer(connectionString));
 
-var connectionString = builder.Configuration.GetConnectionString("default"); // keep your key name
-builder.Services.AddDbContext<AppDbContext>(opts =>
-    opts.UseSqlServer(connectionString));
-
-
+// --- Identity with Roles enabled ---
 builder.Services
     .AddIdentity<User, IdentityRole>(options =>
     {
@@ -20,12 +19,12 @@ builder.Services
         options.Password.RequireLowercase = false;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
-        // options.SignIn.RequireConfirmedEmail = true; // enable if you want email confirmation
+        // options.SignIn.RequireConfirmedEmail = true;
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// Optional: cookie paths (so [Authorize] redirects to your login page)
+// Cookie paths
 builder.Services.ConfigureApplicationCookie(o =>
 {
     o.LoginPath = "/Account/Login";
@@ -33,10 +32,9 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-
 builder.Services.AddControllersWithViews();
 
-
+// --- External auth (Google) ---
 builder.Services
     .AddAuthentication()
     .AddGoogle(options =>
@@ -47,6 +45,49 @@ builder.Services
 
 var app = builder.Build();
 
+// ---------- Seed Admin (role + user) ----------
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
+
+    const string adminRole = "admin";
+
+    // Read from configuration (User Secrets or appsettings)
+    var adminEmail = builder.Configuration["Admin:Email"] ?? "admin@beacon.local";
+    var adminPassword = builder.Configuration["Admin:Password"] ?? "Admin#12345";
+
+    // 1) Ensure role exists
+    if (!await roleManager.RoleExistsAsync(adminRole))
+        await roleManager.CreateAsync(new IdentityRole(adminRole));
+
+    // 2) Ensure user exists
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        adminUser = new User
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+        var create = await userManager.CreateAsync(adminUser, adminPassword);
+        if (!create.Succeeded)
+            throw new Exception("Failed to create admin user: " +
+                                string.Join(", ", create.Errors.Select(e => e.Description)));
+    }
+
+    // 3) Ensure user is in role
+    if (!await userManager.IsInRoleAsync(adminUser, adminRole))
+    {
+        var add = await userManager.AddToRoleAsync(adminUser, adminRole);
+        if (!add.Succeeded)
+            throw new Exception("Failed to add admin role: " +
+                                string.Join(", ", add.Errors.Select(e => e.Description)));
+    }
+}
+// ---------- End seeding ----------
 
 if (!app.Environment.IsDevelopment())
 {
@@ -56,10 +97,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-app.UseAuthentication();  
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

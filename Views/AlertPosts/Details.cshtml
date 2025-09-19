@@ -1,0 +1,49 @@
+﻿@model Beacon.Models.AlertPost
+@{
+    ViewData["Title"] = "Alert Details";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/alerts.css" asp-append-version="true" />
+
+<div class="alert-details">
+    <header class="alert-header">
+        <h2>Beacon Alerts <span class="badge">Details</span></h2>
+        <a asp-action="Index" asp-controller="AlertPosts" class="back-link">← Back</a>
+    </header>
+
+    <div class="alert-hero" style="background-image:url('@(string.IsNullOrWhiteSpace(Model?.AlertImageUrl) ? Url.Content("~/images/placeholder-cover.jpg") : Model.AlertImageUrl)')">
+    </div>
+
+    <section class="alert-meta">
+        <span class="type">@Model.Type</span>
+        <span class="location">@Model.Location</span>
+        <span class="time">
+            @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt")
+            @if (Model.UpdatedAt > Model.CreatedAt)
+            {
+                <span class="updated">(updated @Model.UpdatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt"))</span>
+            }
+        </span>
+    </section>
+
+    <h1 class="alert-title">@Model.Type — Alert</h1>
+    <p class="alert-content">@Model.Content</p>
+
+    <footer class="alert-footer">
+        @{
+            var avatar = Model?.Admin?.ProfileImageUrl;
+            var avatarUrl = string.IsNullOrWhiteSpace(avatar)
+            ? Url.Content("~/images/avatar-placeholder.png")
+            : avatar;
+            var adminName = $"{Model?.Admin?.FirstName} {Model?.Admin?.LastName}".Trim();
+            if (string.IsNullOrWhiteSpace(adminName)) adminName = Model?.Admin?.UserName ?? "Administrator";
+            var adminRole = Model?.Admin?.Role ?? "admin";
+        }
+        <img src="@avatarUrl" alt="@adminName" class="admin-avatar" />
+        <div class="admin-info">
+            <strong>@adminName</strong>
+            <p>A D M I N</p>
+        </div>
+    </footer>
+</div>

@@ -1,0 +1,232 @@
+@model Beacon.Models.Complain
+@{
+    ViewData["Title"] = "Create Complaint";
+}
+
+<div class="complain-container">
+    <div class="complain-card">
+        <h2 class="headline-center">CREATE COMPLAINT</h2>
+
+        <!-- Display TempData Error or Success -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="text-danger" style="text-align:center; margin-bottom:10px;">
+                @TempData["Error"]
+            </div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="success-message">
+                @TempData["Success"]
+            </div>
+        }
+
+        <!-- Validation Summary -->
+        @Html.ValidationSummary(true, "", new { @class = "text-danger", style="margin-bottom:10px;text-align:center;" })
+
+        <form asp-controller="Complain" asp-action="CreateComplain" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+               
+                <div class="full-width">
+                    <label asp-for="Type"></label>
+                    <select asp-for="Type" required class="form-control">
+                        <option value="">-- Select Complaint Type --</option>
+                        <option>Garbage</option>
+                        <option>Water Issue</option>
+                        <option>Road Damage</option>
+                        <option>Noise Complaint</option>
+                        <option>Street Light Issue</option>
+                        <option>Tree / Vegetation Issue</option>
+                        <option>Traffic / Parking Problem</option>
+                        <option>Public Safety</option>
+                        <option>Other</option>
+                    </select>
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+
+                <!-- Content -->
+                <div class="full-width">
+                    <label asp-for="Content"></label>
+                    <textarea asp-for="Content" rows="5" maxlength="2000" placeholder="Describe your issue here..." required class="form-control"></textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
+
+                 <!-- Image upload -->
+                <div class="full-width">
+                    <label asp-for="ImageFiles">Upload Images</label>
+                    <div style="font-size: 12px; color: #555; margin-bottom: 5px;">
+                        You have to select multiple files at once (hold <b>Ctrl+Windows</b> to select more than one).
+                    </div>
+                    <input asp-for="ImageFiles" type="file" accept="image/*" multiple class="form-control"/>
+                    <span asp-validation-for="ImageFiles" class="text-danger"></span>
+                </div>
+
+                <!-- Location -->
+                <div class="full-width">
+                    <label asp-for="Location"></label>
+                    <div class="addr-instruction">
+                        Click <b>Open Google Maps</b> ? Search & pick your location ? Copy the address ? Click <b>Paste</b> below.
+                    </div>
+                    <div class="addr-row">
+                        <input asp-for="Location" id="locationInput" maxlength="500" required class="form-control"/>
+                        <div class="addr-actions">
+                            <button type="button" id="openMapsBtn" class="nav-btn open-maps">Open Maps</button>
+                            <button type="button" id="pasteBtn" class="nav-btn paste">Paste</button>
+                        </div>
+                    </div>
+                    <div id="pasteStatus" class="paste-status" aria-live="polite"></div>
+                    <span asp-validation-for="Location" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="/Home" class="nav-btn back">Cancel</a>
+                <button type="submit" class="nav-btn save">Submit Complaint</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        (() => {
+            const input = document.getElementById('locationInput');
+            const openBtn = document.getElementById('openMapsBtn');
+            const pasteBtn = document.getElementById('pasteBtn');
+            const status = document.getElementById('pasteStatus');
+
+            openBtn?.addEventListener('click', () => {
+                const q = (input?.value || '').trim();
+                const url = q
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+                    : `https://www.google.com/maps`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            });
+
+            async function pasteFromClipboard() {
+                if (!navigator.clipboard || !navigator.clipboard.readText) {
+                    status.textContent = 'Clipboard not available. Paste manually (Ctrl/Cmd + V).';
+                    status.className = 'paste-status warn';
+                    return;
+                }
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        input.value = text.trim();
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        status.textContent = 'Pasted location from clipboard.';
+                        status.className = 'paste-status ok';
+                        setTimeout(() => { status.textContent = ''; }, 2500);
+                    } else {
+                        status.textContent = 'Clipboard is empty.';
+                        status.className = 'paste-status warn';
+                    }
+                } catch {
+                    status.textContent = 'Permission denied to read clipboard.';
+                    status.className = 'paste-status warn';
+                }
+            }
+
+            pasteBtn?.addEventListener('click', pasteFromClipboard);
+        })();
+    </script>
+}
+
+<style>
+    /* ---------- THEME VARIABLES ---------- */
+    :root {
+        --bg: #fafafa;
+        --text: #1f2937;
+        --muted-text: #374151;
+        --card: #ffffff;
+        --border: #e5e7eb;
+        --brand: #6c63ff;
+        --brand-hover: #4a47c6;
+        --success: #28a745;
+        --success-hover: #1e7e34;
+        --shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    .dark {
+        --bg: #0b1220;
+        --text: #e5e7eb;
+        --muted-text: #cbd5e1;
+        --card: #0f172a;
+        --border: #1e293b;
+        --brand: #8b86ff;
+        --brand-hover: #adaaff;
+        --success: #34d399;
+        --success-hover: #10b981;
+        --shadow: 0 12px 28px rgba(0,0,0,0.45);
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Segoe UI', sans-serif;
+        transition: background .25s ease, color .25s ease;
+    }
+
+    .complain-container { width: 80%; max-width: 950px; margin: -5px auto; }
+    .complain-card {
+        background: var(--card);
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        transition: transform 0.2s ease;
+    }
+    .complain-card:hover { transform: translateY(-2px); }
+    .headline-center {
+        text-align: center;
+        font-size: 28px;
+        font-weight: 700;
+        Color: #F97316;
+        margin-bottom: 30px;
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-grid .full-width { grid-column: span 2; }
+
+    label { font-size: 14px; color: var(--muted-text); margin-bottom: 6px; display: block; }
+    input, textarea, select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--text);
+        background: var(--card);
+        transition: 0.2s;
+    }
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
+    }
+
+    .btn-group { margin-top: 30px; display: flex; gap: 12px; justify-content: center; }
+    .nav-btn { font-weight: 600; font-size: 14px; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; transition: 0.25s; }
+    .nav-btn.save { background: var(--success); color: #fff; }
+    .nav-btn.save:hover { background: var(--success-hover); }
+    .nav-btn.back { background: var(--brand); color: #fff; }
+    .nav-btn.back:hover { background: var(--brand-hover); }
+
+    .addr-instruction { font-size: 12px; color: var(--muted-text); margin-bottom: 6px; }
+    .addr-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .addr-actions { display: flex; gap: 10px; }
+    .nav-btn.open-maps { background: #2563eb; color: #fff; }
+    .nav-btn.paste { background: #10b981; color: #fff; }
+
+    .paste-status { margin-top: 6px; font-size: 12px; min-height: 1em; }
+    .paste-status.ok { color: #059669; }
+    .paste-status.warn { color: #b45309; }
+
+    .text-danger { font-size: 13px; color: red; }
+    .success-message { margin-top: 20px; color: var(--success); font-weight: 600; text-align: center; }
+</style>
+
+

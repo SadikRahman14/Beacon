@@ -100,6 +100,22 @@
             background-color: #334155;
         }
     </style>
+    <style>
+        html, body {
+            height: 100%;
+            background-color: #111827; /* dark slate */
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+    </style>
 
 
     <main role="main"
@@ -116,9 +132,38 @@
     </button>
 
     <!-- Footer -->
-    <footer class="mt-auto w-full bg-gray-800 py-8 text-gray-300 dark:bg-gray-900 dark:text-gray-400">
-
+    <footer class="footer mt-auto w-full text-gray-300 dark:text-gray-400">
+        <div class="footer-inner">
+            <p>&copy; @(DateTime.UtcNow.Year) Beacon. All rights reserved.</p>
+        </div>
     </footer>
+
+    <style>
+        .footer {
+            background-color: #111827; /* dark slate */
+            padding: 20px 0;
+        }
+
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #9ca3af; /* gray-400 */
+        }
+
+        .footer a {
+            color: #3b82f6; /* blue link */
+            text-decoration: none;
+        }
+
+            .footer a:hover {
+                text-decoration: underline;
+            }
+    </style>
+
+
 
     @await RenderSectionAsync("Scripts", required: false)
 

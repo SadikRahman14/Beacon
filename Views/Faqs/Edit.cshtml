@@ -1,0 +1,137 @@
+﻿@model Beacon.ViewModels.FaqEditViewModel
+@{
+    ViewData["Title"] = "Edit FAQ";
+}
+
+<div class="faq-form-container">
+    <div class="faq-form-card">
+        <h2 class="form-title">Edit FAQ</h2>
+        <p class="form-subtitle">Update the question and answer as needed.</p>
+
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input asp-for="FaqId" type="hidden" />
+
+            <!-- Question -->
+            <div class="form-group">
+                <label asp-for="Question" class="form-label"></label>
+                <input asp-for="Question" class="form-input" placeholder="Enter the updated question..." />
+                <span asp-validation-for="Question" class="text-danger"></span>
+            </div>
+
+            <!-- Answer -->
+            <div class="form-group">
+                <label asp-for="Answer" class="form-label"></label>
+                <textarea asp-for="Answer" rows="5" class="form-textarea" placeholder="Update the answer..."></textarea>
+                <span asp-validation-for="Answer" class="text-danger"></span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">Update</button>
+                <a asp-action="Index" class="btn btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .faq-form-container {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .faq-form-card {
+        background: #1f2937; /* slate-800 */
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+        color: #e5e7eb; /* gray-200 */
+    }
+
+    .form-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #fff;
+    }
+
+    .form-subtitle {
+        font-size: 14px;
+        color: #9ca3af; /* gray-400 */
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #d1d5db; /* gray-300 */
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #374151; /* slate-700 */
+        background: #111827; /* slate-900 */
+        color: #f9fafb; /* gray-50 */
+        font-size: 14px;
+    }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: #3b82f6; /* blue-500 */
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.4);
+        }
+
+    .form-actions {
+        margin-top: 24px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-save {
+        background: #2563eb; /* blue-600 */
+        color: #fff;
+    }
+
+        .btn-save:hover {
+            background: #1d4ed8; /* blue-700 */
+        }
+
+    .btn-cancel {
+        background: #374151; /* slate-700 */
+        color: #e5e7eb;
+    }
+
+        .btn-cancel:hover {
+            background: #4b5563; /* slate-600 */
+        }
+
+    .text-danger {
+        display: block;
+        font-size: 13px;
+        margin-top: 4px;
+        color: #f87171; /* red-400 */
+    }
+</style>

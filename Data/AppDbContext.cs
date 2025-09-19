@@ -11,6 +11,7 @@ namespace Beacon.Data
 
         // Expose the AlertPosts table
         public DbSet<AlertPost> AlertPosts { get; set; } = default!;
+        public DbSet<Faq> Faqs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

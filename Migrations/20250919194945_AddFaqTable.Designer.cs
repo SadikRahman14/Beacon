@@ -4,6 +4,7 @@ using Beacon.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Beacon.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250919194945_AddFaqTable")]
+    partial class AddFaqTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,33 +75,6 @@ namespace Beacon.Migrations
                     b.HasIndex("AdminId");
 
                     b.ToTable("alertPost");
-                });
-
-            modelBuilder.Entity("Beacon.Models.Faq", b =>
-                {
-                    b.Property<string>("FaqId")
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("faq_id");
-
-                    b.Property<string>("Answer")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("answer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("question");
-
-                    b.HasKey("FaqId");
-
-                    b.ToTable("faq");
                 });
 
             modelBuilder.Entity("Beacon.Models.User", b =>

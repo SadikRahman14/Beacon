@@ -1,0 +1,207 @@
+﻿@model IEnumerable<Beacon.Models.Faq>
+@{
+    ViewData["Title"] = "Support Center - FAQ";
+}
+
+<section class="faq-section">
+    <header class="faq-header">
+        <h1>Support Center</h1>
+        <p class="subtitle">Frequently Asked Questions</p>
+        <p class="hint">Can’t find the answer? Reach out to our <a href="/Contact">customer support</a>.</p>
+    </header>
+
+    @if (!Model.Any())
+    {
+        <p class="empty">No FAQs available yet.</p>
+    }
+    else
+    {
+        <div class="faq-list">
+            @foreach (var faq in Model)
+            {
+                <details class="faq-item">
+                    <summary>
+                        <span>@faq.Question</span>
+                        <span class="summary-icon">▼</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>@faq.Answer</p>
+
+                        @if (User.IsInRole("admin"))
+                        {
+                            <div class="faq-actions">
+                                <a asp-action="Edit" asp-route-id="@faq.FaqId" class="btn btn-edit">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@faq.FaqId" method="post" class="inline-form"
+                                      onsubmit="return confirm('Delete this FAQ permanently?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-delete">Delete</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </details>
+            }
+        </div>
+    }
+
+    @if (User.IsInRole("admin"))
+    {
+        <div class="add-row">
+            <a asp-action="Create" class="btn btn-add">＋ Add FAQ</a>
+        </div>
+    }
+</section>
+
+<style>
+    /* Container */
+    .faq-section {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: Arial, sans-serif;
+        color: #e5e5e5; /* light text for dark bg */
+    }
+
+    .faq-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+        .faq-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .faq-header .subtitle {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 8px 0;
+            color: #cbd5e1; /* slate-300 */
+        }
+
+        .faq-header .hint {
+            font-size: 14px;
+            color: #94a3b8; /* slate-400 */
+        }
+
+            .faq-header .hint a {
+                color: #3b82f6; /* blue-500 */
+                text-decoration: none;
+            }
+
+                .faq-header .hint a:hover {
+                    text-decoration: underline;
+                }
+
+    .empty {
+        text-align: center;
+        color: #9ca3af;
+        font-size: 16px;
+    }
+
+    /* FAQ List */
+    .faq-list {
+        margin-top: 20px;
+    }
+
+    .faq-item {
+        border: 1px solid #374151; /* slate-700 */
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+        background: #1f2937; /* slate-800 */
+    }
+
+        .faq-item summary {
+            padding: 14px 18px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111827; /* slate-900 */
+            color: #f3f4f6; /* gray-100 */
+        }
+
+            .faq-item summary:hover {
+                background: #0f172a; /* darker */
+            }
+
+    .summary-icon {
+        font-size: 14px;
+        transition: transform 0.2s ease;
+        color: #9ca3af;
+    }
+
+    .faq-item[open] .summary-icon {
+        transform: rotate(180deg);
+        color: #3b82f6; /* blue highlight */
+    }
+
+    .faq-answer {
+        padding: 16px 18px;
+        border-top: 1px solid #374151;
+        font-size: 14px;
+        line-height: 1.6;
+        background: #1f2937; /* slate-800 */
+        color: #d1d5db; /* gray-300 */
+    }
+
+    /* Actions */
+    .faq-actions {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .inline-form {
+        display: inline;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        display: inline-block;
+        font-weight: 600;
+    }
+
+    .btn-edit {
+        background: #2563eb; /* blue-600 */
+        color: #fff;
+    }
+
+        .btn-edit:hover {
+            background: #1d4ed8; /* blue-700 */
+        }
+
+    .btn-delete {
+        background: #dc2626; /* red-600 */
+        color: #fff;
+    }
+
+        .btn-delete:hover {
+            background: #b91c1c; /* red-700 */
+        }
+
+    .btn-add {
+        background: #16a34a; /* green-600 */
+        color: #fff;
+        font-weight: 700;
+    }
+
+        .btn-add:hover {
+            background: #15803d; /* green-700 */
+        }
+
+    .add-row {
+        margin-top: 20px;
+        text-align: right;
+    }
+</style>

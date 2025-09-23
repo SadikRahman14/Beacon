@@ -2,6 +2,7 @@ using Beacon.Data;
 using Beacon.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;  
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -29,7 +30,6 @@ namespace Beacon.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateComplain(Complain model)
         {
-            // 1. Get logged-in user ID
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Debug.WriteLine($"DEBUG: Logged-in UserId = {userId}");
 
@@ -39,19 +39,15 @@ namespace Beacon.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // 2. Set required fields BEFORE ModelState validation
             model.UserId = userId;
             model.ComplaintImageUrl = string.Empty;
 
-            // Remove ModelState errors for fields you set manually
             ModelState.Remove(nameof(model.UserId));
             ModelState.Remove(nameof(model.User));
             ModelState.Remove(nameof(model.ComplaintImageUrl));
 
-            // 3. Log all form values
             LogFormValues(model);
 
-            // 4. Check ModelState
             if (!ModelState.IsValid)
             {
                 TempData["Error"] = "Please fix the validation errors.";
@@ -59,7 +55,6 @@ namespace Beacon.Controllers
                 return View(model);
             }
 
-            // 5. Handle file uploads
             if (model.ImageFiles != null && model.ImageFiles.Count > 0)
             {
                 var uploadFolder = Path.Combine(_env.WebRootPath, "uploads/complaints");
@@ -83,16 +78,29 @@ namespace Beacon.Controllers
                 model.ComplaintImageUrl = string.Join(',', uploadedPaths);
             }
 
-            // 6. Set timestamps
             model.CreatedAt = DateTime.UtcNow;
             model.UpdatedAt = DateTime.UtcNow;
 
-            // 7. Save to database
             _context.Complains.Add(model);
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Complaint submitted successfully.";
             return RedirectToAction(nameof(CreateComplain));
+        }
+
+        [HttpGet]
+        public IActionResult AllComplains()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Include User and exclude complaints from logged-in user
+            var complains = _context.Complains
+                .Include(c => c.User)
+                .Where(c => c.UserId != userId)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToList();
+
+            return View(complains);
         }
 
         #region Debug Helpers

@@ -21,6 +21,16 @@
                 @foreach (var complain in Model)
                 {
                     <div class="complain-item">
+
+                        <!-- User Info -->
+                        <div class="complain-user-info">
+                            <img src="@(complain.User?.ProfileImageUrl ?? "/images/default-profile.jpg")" 
+                                 alt="User Image" class="complain-user-img" />
+                            <span class="complain-user-name">
+                                @(complain.User != null ? $"{complain.User.FirstName} {complain.User.LastName}" : "Unknown User")
+                            </span>
+                        </div>
+
                         <!-- Type + Time Top Right -->
                         <div class="complain-header-item">
                             <h3 class="complain-type">@complain.Type</h3>
@@ -48,7 +58,7 @@
                         }
 
                         <!-- Votes / Like Section -->
-                        <div >
+                        <div>
                             <button class="vote-button">👍 @complain.VoteCount</button>
                         </div>
                     </div>
@@ -84,6 +94,7 @@
     --shadow: 0 12px 28px rgba(0,0,0,0.45);
 }
 
+/* Body */
 body {
     background: var(--bg);
     color: var(--text);
@@ -98,6 +109,7 @@ body {
     border-radius: 16px;
     box-shadow: var(--shadow);
     border: 1px solid var;
+    margin-top: -11px;
 }
 
 /* Header section */
@@ -115,7 +127,7 @@ body {
     color: var(--text);
     opacity: 0.85;
     text-align: left;
-    margin-bottom: 34px;
+    margin-bottom: 45px;
     margin-left: 8px;
 }
 .dark .complain-subline { color: var(--muted-text); }
@@ -131,10 +143,28 @@ body {
     box-shadow: var(--shadow);
     transition: transform 0.2s ease;
 }
-.dark .complain-item {
-    border: 1px solid var(--border); /* ensures white border in dark mode */
-}
 .complain-item:hover { transform: translateY(-2px); }
+
+/* User info above complaint type */
+.complain-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.complain-user-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border);
+}
+.complain-user-name {
+    font-weight: 650;
+    font-size: 17px;
+    color: var(--text);
+}
+.dark .complain-user-name { color: var(--text); }
 
 /* Type + Date at top */
 .complain-header-item {
@@ -144,38 +174,17 @@ body {
     flex-wrap: wrap;
     margin-bottom: 6px;
 }
-.complain-type {
-    font-size: 20px;
-    font-weight: 700;
-    color: #F97316;
-}
-.complain-date {
-    font-size: 13px;
-    color: var(--muted-text);
-}
+.complain-type { font-size: 20px; font-weight: 700; color: #F97316; }
+.complain-date { font-size: 13px; color: var(--muted-text);margin-top:-51px; }
 
 /* Location below type/date */
-.complain-meta-location {
-    font-size: 14px;
-    color: var(--muted-text);
-    margin-bottom: 10px;
-}
+.complain-meta-location { font-size: 14px; color: var(--muted-text); margin-bottom: 10px; }
 
 /* Content & images */
-.complain-content {
-    font-size: 15px;
-    margin-bottom: 32px;
-    line-height: 1.5;
-    color: var(--text);
-}
-.complain-images {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 42px;
-    flex-wrap: wrap;
-}
+.complain-content { font-size: 15px; margin-bottom: 32px; line-height: 1.5; color: var(--text); }
+.complain-images { display: flex; gap: 12px; margin-bottom: 42px; flex-wrap: wrap; }
 .complain-img {
-    width: 250px;  /* larger images */
+    width: 250px;
     height: auto;
     border-radius: 8px;
     border: 1px solid var(--border);
@@ -185,7 +194,7 @@ body {
 }
 .complain-img:hover { transform: scale(1.05); }
 
-/* Votes section styled like social media button */
+/* Votes section */
 .complain-votes-section {
     margin-top: 12px;
     padding: 8px 12px;
@@ -196,7 +205,6 @@ body {
     display: inline-block;
     box-shadow: var(--shadow);
 }
-
 .vote-button {
     display: inline-flex;
     align-items: center;
@@ -204,46 +212,26 @@ body {
     padding: 6px 12px;
     font-size: 14px;
     font-weight: 500;
-    background-color:   #22c55e;
+    background-color: #22c55e;
     color: #fff;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    margin-left:5px;
+    margin-left: 5px;
     transition: background 0.2s ease, transform 0.2s ease;
 }
-
-.vote-button:hover {
-    background-color: #4ade80;
-    transform: scale(1.05);
-}
-
-.dark .vote-button {
-    background-color:  #22c55e;
-    color: #fff;
-}
-.dark .vote-button:hover {
-    background-color:#4ade80;
-    transform: scale(1.05);
-}
+.vote-button:hover { background-color: #4ade80; transform: scale(1.05); }
+.dark .vote-button { background-color: #22c55e; color: #fff; }
+.dark .vote-button:hover { background-color:#4ade80; transform: scale(1.05); }
 
 /* Lightbox modal */
 #lightbox {
-    position: fixed;
-    top:0; left:0; width:100%; height:100%;
+    position: fixed; top:0; left:0; width:100%; height:100%;
     background: rgba(0,0,0,0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    cursor: zoom-out;
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000; cursor: zoom-out;
 }
-#lightbox img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-}
+#lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 </style>
 
 @section Scripts {
@@ -254,7 +242,6 @@ function openImage(img) {
     lbImg.src = img.src;
     lightbox.style.display = 'flex';
 }
-
 function closeImage() {
     var lightbox = document.getElementById('lightbox');
     lightbox.style.display = 'none';

@@ -21,7 +21,14 @@
                class="text-3xl font-extrabold text-indigo-600 transition hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200">
                 Beacon
             </a>
-
+            
+        <!-- Middle Nav Buttons -->
+        <div class="flex items-center gap-6">
+            <a asp-controller="Complain" asp-action="AllComplains"
+               class="rounded-lg bg-indigo-600 px-4 py-2 text-white text-sm font-semibold shadow-md hover:bg-indigo-700 transition">
+                All Complains
+            </a>
+        </div>
             <!-- User Profile (RIGHT) -->
             <div class="flex items-center gap-4">
                 @if (SignInManager.IsSignedIn(User))

@@ -137,7 +137,7 @@ namespace Beacon.Controllers
             user.Address = model.Address;
             user.UpdatedAt = DateTime.UtcNow;
 
-            user.Latitude = model.Latitude;    
+            user.Latitude = model.Latitude;
             user.Longitude = model.Longitude;
 
             if (ProfileImage != null && ProfileImage.Length > 0)
@@ -151,7 +151,6 @@ namespace Beacon.Controllers
                 {
                     await ProfileImage.CopyToAsync(stream);
                 }
-
                 user.ProfileImageUrl = $"/uploads/{fileName}";
             }
 
@@ -168,7 +167,6 @@ namespace Beacon.Controllers
             return View(model);
         }
 
-        // ---------------- New Action for AJAX Upload ----------------
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]

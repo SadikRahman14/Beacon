@@ -10,6 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Beacon</title>
     <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-pk9KeC7XU+lVxz+8f+jcQx5p8A0uT7uYxN0tK7mZzTf2gMHe8K1y1G9s1ZzMfx9XZ7SrpM3QX6N2yY2E2xOZBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body id="body" class="flex min-h-screen flex-col text-gray-900 transition-colors duration-300">
 
@@ -107,6 +109,22 @@
             background-color: #334155;
         }
     </style>
+    <style>
+        html, body {
+            height: 100%;
+            background-color: #111827; /* dark slate */
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+    </style>
 
 
     <main role="main"
@@ -123,9 +141,146 @@
     </button>
 
     <!-- Footer -->
-    <footer class="mt-auto w-full bg-gray-800 py-8 text-gray-300 dark:bg-gray-900 dark:text-gray-400">
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <!-- Solutions -->
+                <div class="footer-col">
+                    <h3>Solutions</h3>
+                    <ul>
+                        <li><a href="#">Alerts</a></li>
+                        <li><a href="#">Safety</a></li>
+                        <li><a href="#">Events</a></li>
+                        <li><a href="#">Announcements</a></li>
+                    </ul>
+                </div>
 
+                <!-- Support -->
+                <div class="footer-col">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Guides</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Company -->
+                <div class="footer-col">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a asp-controller="Home" asp-action="About">About Us</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+
+                <!-- Legal -->
+                <div class="footer-col">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; @(DateTime.UtcNow.Year) Beacon. All rights reserved.</p>
+                <div class="footer-social">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
     </footer>
+
+
+
+    <style>
+        .footer {
+            background-color: #1f2937; /* dark gray */
+            color: #d1d5db; /* light gray */
+            padding: 40px 20px 20px;
+            margin-top: auto;
+        }
+
+        .footer-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-col h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: #9ca3af; /* muted gray */
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .footer-col ul li {
+                margin-bottom: 8px;
+            }
+
+                .footer-col ul li a {
+                    text-decoration: none;
+                    color: #d1d5db;
+                    font-size: 14px;
+                    transition: color 0.2s ease;
+                }
+
+                    .footer-col ul li a:hover {
+                        color: #ffffff;
+                    }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+            .footer-bottom p {
+                font-size: 14px;
+                margin: 0;
+            }
+
+        .footer-social {
+            display: flex;
+            gap: 16px;
+        }
+
+            .footer-social a {
+                text-decoration: none;
+                font-size: 18px;
+                color: #9ca3af;
+                transition: color 0.2s ease;
+            }
+
+                .footer-social a:hover {
+                    color: #ffffff;
+                }
+
+    </style>
+
+
 
     @await RenderSectionAsync("Scripts", required: false)
 

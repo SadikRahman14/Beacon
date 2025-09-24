@@ -1,0 +1,169 @@
+﻿@{
+    ViewData["Title"] = "About Us";
+}
+
+<section class="about-us-container">
+    <h2 class="about-us-section-dev-title">Our Dev Team</h2>
+
+    <!-- Team Gallery -->
+    <div class="about-us-gallery">
+        <figure class="about-us-card">
+            <img src="/images/sadik.jpg" alt="Kazi Kamruddin portrait" />
+            <figcaption class="about-us-overlay-text">
+                <h3>Sumit Majumder</h3>
+                <p>Backend Developer</p>
+            </figcaption>
+        </figure>
+
+        <figure class="about-us-card">
+            <img src="/images/sadik.jpg" alt="Sadik Rahman portrait" />
+            <figcaption class="about-us-overlay-text">
+                <h3>Sadik Rahman</h3>
+                <p>System Designer and Backend Developer</p>
+            </figcaption>
+        </figure>
+
+        <figure class="about-us-card">
+            <img src="/images/sadik.jpg" alt="Sumit Majumder portrait" />
+            <figcaption class="about-us-overlay-text">
+                <h3>Asfia Amir</h3>
+                <p>Frontend Developer</p>
+            </figcaption>
+        </figure>
+
+    </div>
+
+    <!-- Mission -->
+    <div class="about-us-section-container">
+        <h2 class="about-us-section-title">Our Mission</h2>
+        <p class="about-us-section-text">
+            At Beacon, our mission is to keep communities safe and connected by providing a seamless alert and information system.
+            From emergencies to events, we strive to empower people with timely, reliable updates that make a difference in everyday life.
+        </p>
+    </div>
+
+    <!-- History -->
+    <div class="about-us-section-container">
+        <h2 class="about-us-section-title">Our History</h2>
+        <p class="about-us-section-text">
+            Beacon was founded to address a growing need for trustworthy alert systems in fast-changing environments.
+            Starting as a small project, it has grown into a trusted platform where administrators can share critical information
+            and users can stay informed. Through continuous innovation and dedication, Beacon has become a hub for communication,
+            awareness, and safety.
+        </p>
+    </div>
+</section>
+
+<style>
+    .about-us-container {
+        padding: 40px 20px;
+        background-color: #111827; /* dark slate */
+        color: #e5e7eb;
+    }
+
+    /* Section Headers */
+    .about-us-section-dev-title {
+        font-size: 2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-align: center;
+        background: linear-gradient(20deg, #3b82f6, #10b981);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 30px;
+    }
+
+    .about-us-section-title {
+        flex: 0.25;
+        font-size: 1.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        background: linear-gradient(90deg, #3b82f6, #10b981);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+
+    .about-us-section-text {
+        flex: 0.75;
+        font-size: 1rem;
+        line-height: 1.8;
+        color: #d1d5db;
+        padding: 15px;
+        border-left: 4px solid #3b82f6;
+        border-right: 4px solid #10b981;
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+    }
+
+    .about-us-section-container {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 2rem;
+        max-width: 1000px;
+        margin: 30px auto;
+    }
+
+    /* Team Gallery */
+    .about-us-gallery {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 60px;
+    }
+
+    .about-us-card {
+        position: relative;
+        width: 220px;
+        height: 320px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+        .about-us-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .about-us-card:hover {
+            transform: scale(1.05);
+        }
+
+    /* Overlay text */
+    .about-us-overlay-text {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 12px;
+        background: #111827;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .about-us-card:hover .about-us-overlay-text {
+        opacity: 1;
+    }
+
+    .about-us-overlay-text h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .about-us-overlay-text p {
+        margin: 2px 0 0;
+        font-size: 0.85rem;
+        color: #9ca3af;
+    }
+
+</style>

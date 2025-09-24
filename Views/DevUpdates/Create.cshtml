@@ -1,0 +1,402 @@
+﻿@using Beacon.ViewModels
+@model DevUpdateCreateViewModel
+@{
+    ViewData["Title"] = "New Dev Update";
+}
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h2 class="headline flex items-center justify-center">Create Dev Update</h2>
+    </div>
+
+    <div class="profile-card">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+                <!-- Type -->
+                <div>
+                    <label asp-for="Type" class="font-semibold">Type</label>
+                    <input asp-for="Type" placeholder="e.g., Bugfix, Release, Maintenance" required />
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+
+                <!-- Location + Maps/Paste -->
+                <div class="mb-6">
+                    <label asp-for="Location" class="block text-sm font-medium text-gray-800 dark:text-gray-200"></label>
+
+                    <div class="flex items-center gap-2">
+                        <input asp-for="Location" id="locationInput" maxlength="200" required
+                               placeholder="Enter or paste your location..."
+                               class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400
+                                      focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500
+                                      dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500" />
+
+                        <button type="button" id="openMapsBtn" class="location-btn" title="Open Google Maps in a new tab">
+                            Maps
+                        </button>
+
+                        <button type="button" id="pasteBtn" class="location-btn" title="Paste from clipboard">
+                            Paste
+                        </button>
+                    </div>
+
+                    <div id="pasteStatus" class="mt-1 text-xs text-gray-500 dark:text-gray-400" aria-live="polite"></div>
+                    <span asp-validation-for="Location" class="mt-1 block text-sm text-red-600 dark:text-red-400"></span>
+                </div>
+
+                <!-- Content (full width) -->
+                <div class="full-width">
+                    <label asp-for="Content">Content</label>
+                    <textarea asp-for="Content" rows="5" maxlength="2000" required></textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
+
+                <!-- Image upload -->
+                <div class="full-width">
+                    <label asp-for="Image">Image (optional)</label>
+
+                    <div class="upload-box">
+                        <div class="upload-box-inner">
+                            <p class="upload-text">
+                                <label for="file-upload" class="upload-link">Upload a file</label>
+                            </p>
+                            <p class="upload-hint">PNG, JPG, or WebP up to 2MB</p>
+                        </div>
+                    </div>
+
+                    <!-- single hidden file input -->
+                    <input asp-for="Image" id="file-upload" type="file"
+                           accept=".jpg,.jpeg,.png,.webp" class="sr-only" />
+
+                    <div id="preview" class="img-preview" style="display:none;">
+                        <img id="previewImg" alt="Preview" />
+                    </div>
+
+                    <span asp-validation-for="Image" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a asp-action="Index" class="nav-btn back">Back</a>
+                <button type="submit" class="nav-btn save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Image preview + lightweight client validation for type/size
+        (function () {
+            const input = document.getElementById('file-upload');
+            const wrap = document.getElementById('preview');
+            const img = document.getElementById('previewImg');
+            if (!input) return;
+
+            input.addEventListener('change', function () {
+                const file = this.files && this.files[0];
+                if (!file) { wrap.style.display = 'none'; img.removeAttribute('src'); return; }
+                const ok = ['image/jpeg','image/png','image/webp'];
+                if (!ok.includes(file.type) || file.size > 2*1024*1024) {
+                    this.value='';
+                    wrap.style.display='none';
+                    img.removeAttribute('src');
+                    alert('Please choose a PNG/JPG/WebP image up to 2MB.');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = e => { img.src = e.target.result; wrap.style.display = 'block'; };
+                reader.readAsDataURL(file);
+            });
+        })();
+    </script>
+
+    <script>
+        // Maps open + clipboard paste (uses locationInput)
+        (function () {
+            const input  = document.getElementById('locationInput');
+            const openBtn = document.getElementById('openMapsBtn');
+            const pasteBtn = document.getElementById('pasteBtn');
+            const status = document.getElementById('pasteStatus');
+
+            openBtn?.addEventListener('click', () => {
+                const q = (input?.value || '').trim();
+                const url = q
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+                    : `https://www.google.com/maps`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            });
+
+            async function pasteFromClipboard() {
+                if (!navigator.clipboard?.readText) {
+                    status.textContent = 'Clipboard not available. Use Ctrl/Cmd + V.';
+                    return;
+                }
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        input.value = text.trim();
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        status.textContent = 'Pasted location from clipboard.';
+                        setTimeout(() => status.textContent = '', 2500);
+                    } else {
+                        status.textContent = 'Clipboard is empty.';
+                    }
+                } catch {
+                    status.textContent = 'Permission denied. Paste manually (Ctrl/Cmd + V).';
+                }
+            }
+            pasteBtn?.addEventListener('click', pasteFromClipboard);
+        })();
+    </script>
+}
+
+<style>
+    /* ---- layout reused from your reference ---- */
+    .profile-container {
+        flex: 1;
+        width: 80%;
+        max-width: 950px;
+        margin: 40px auto;
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .headline {
+        font-size: 26px;
+        font-weight: 700;
+        color: #6c63ff;
+        letter-spacing: 1px;
+    }
+
+    .profile-card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,.12);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+        .form-grid .full-width {
+            grid-column: span 2;
+        }
+
+    label {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font: inherit;
+        color: #111;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .btn-group {
+        margin-top: 28px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .nav-btn {
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: .25s;
+    }
+
+        .nav-btn.save {
+            background: #28a745;
+            color: #fff;
+        }
+
+            .nav-btn.save:hover {
+                background: #1e7e34;
+            }
+
+        .nav-btn.back {
+            background: #6c63ff;
+            color: #fff;
+        }
+
+            .nav-btn.back:hover {
+                background: #4a47c6;
+            }
+
+    .text-danger {
+        color: #e11d48;
+        font-size: 13px
+    }
+
+    /* upload */
+    .upload-box {
+        border: 1px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 26px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #fafafa;
+    }
+
+    .upload-box-inner {
+        text-align: center
+    }
+
+    .upload-text {
+        margin-top: 8px;
+        font-size: 14px;
+        color: #6b7280
+    }
+
+    .upload-link {
+        color: #2563eb;
+        cursor: pointer;
+        font-weight: 600
+    }
+
+        .upload-link:hover {
+            text-decoration: underline
+        }
+
+    .upload-hint {
+        font-size: 12px;
+        color: #9ca3af
+    }
+
+    .img-preview {
+        margin-top: 10px
+    }
+
+        .img-preview img {
+            max-height: 220px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            display: block
+        }
+
+    /* Maps/Paste buttons */
+    .location-btn {
+        padding: 6px 12px;
+        line-height: 1.2;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color .2s ease, transform .15s ease;
+    }
+
+        .location-btn:hover {
+            transform: translateY(-1px)
+        }
+
+        .location-btn:active {
+            transform: translateY(0)
+        }
+
+    #openMapsBtn {
+        background: #dc2626
+    }
+
+        #openMapsBtn:hover {
+            background: #b91c1c
+        }
+
+    #pasteBtn {
+        background: #059669
+    }
+
+        #pasteBtn:hover {
+            background: #047857
+        }
+
+    /* dark mode */
+    .dark {
+        background-color: #121212;
+        color: #e5e5e5;
+    }
+
+        .dark .profile-card {
+            background-color: #1f1f1f;
+            box-shadow: 0 8px 25px rgba(0,0,0,.6);
+        }
+
+        .dark .headline {
+            color: #a78bfa;
+        }
+
+        .dark label {
+            color: #ccc;
+        }
+
+        .dark input, .dark select, .dark textarea {
+            background-color: #2b2b2b;
+            border: 1px solid #444;
+            color: #e5e5e5;
+        }
+
+        .dark .nav-btn.back {
+            background-color: #7c3aed;
+        }
+
+            .dark .nav-btn.back:hover {
+                background-color: #5b21b6;
+            }
+
+        .dark .nav-btn.save {
+            background-color: #16a34a;
+        }
+
+            .dark .nav-btn.save:hover {
+                background-color: #15803d;
+            }
+
+        .dark .upload-box {
+            background: #161616;
+            border-color: #374151;
+        }
+
+        .dark .upload-text, .dark .upload-hint {
+            color: #9ca3af;
+        }
+
+        .dark .img-preview img {
+            border-color: #374151;
+        }
+
+        .dark .text-danger {
+            color: #f87171;
+        }
+</style>

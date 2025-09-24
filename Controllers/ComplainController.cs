@@ -93,7 +93,6 @@ namespace Beacon.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Include User and exclude complaints from logged-in user
             var complains = _context.Complains
                 .Include(c => c.User)
                 .Where(c => c.UserId != userId)
@@ -103,7 +102,6 @@ namespace Beacon.Controllers
             return View(complains);
         }
 
-        // ---------- NEW ACTION: MyPosts ----------
         [HttpGet]
         public IActionResult MyPosts()
         {
@@ -119,6 +117,29 @@ namespace Beacon.Controllers
                 .ToList();
 
             return View("MyPost", myComplains);
+        }
+
+        // ---------- NEW ACTION: Delete Complaint ----------
+        [HttpGet]
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return NotFound();
+
+            var complain = await _context.Complains.FindAsync(id);
+            if (complain == null)
+                return NotFound();
+
+            // Only allow deletion by owner
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (complain.UserId != userId)
+                return Forbid();
+
+            _context.Complains.Remove(complain);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Complaint deleted successfully.";
+            return RedirectToAction(nameof(MyPosts));
         }
 
         #region Debug Helpers

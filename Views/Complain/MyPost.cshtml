@@ -11,6 +11,14 @@
             <p class="complain-subline">Browse all complaints you have submitted</p>
         </div>
 
+        <!-- Success message after deletion -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-success">
+                @TempData["Success"]
+            </div>
+        }
+
         @if (!Model.Any())
         {
             <p style="text-align:center; color:var(--muted-text); margin:20px 0;">No complaints found.</p>
@@ -61,8 +69,8 @@
                         <div class="complain-actions">
                             <button class="vote-button">👍 @complain.VoteCount</button>
                             <div class="action-buttons">
-                                <a class="edit-btn">Edit</a>
-                                <a  class="delete-btn">Delete</a>
+                                <a class="edit-btn" href="@Url.Action("Edit", "Complain", new { id = complain.ComplaintId })">Edit</a>
+                                <a href="javascript:void(0);" class="delete-btn" onclick="confirmDelete('@complain.ComplaintId')">Delete</a>
                             </div>
                         </div>
 
@@ -78,8 +86,19 @@
     <img id="lightbox-img" src="" alt="Full Image" />
 </div>
 
+<!-- Custom Confirmation Modal -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete this complaint?</p>
+        <div class="modal-actions">
+            <button id="confirmYes">Yes, Delete</button>
+            <button id="confirmNo">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <style>
-/* ---------- THEME VARIABLES ---------- */
 :root {
     --bg: #fafafa;
     --text: #1f2937;
@@ -89,161 +108,88 @@
     --brand: #3b82f6;
     --shadow: 0 8px 25px rgba(0,0,0,0.12);
 }
-.dark {
-    --bg: #0b1220;
-    --text: #e5e7eb;
-    --muted-text: #cbd5e1;
-    --card: #0f172a;
-    --border: #ffffff; 
-    --brand: #ffffff; 
-    --shadow: 0 12px 28px rgba(0,0,0,0.45);
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Segoe UI', sans-serif;
-    transition: background .25s ease, color .25s ease;
-}
+.dark { --bg: #0b1220; --text: #e5e7eb; --muted-text: #cbd5e1; --card: #0f172a; --border: #ffffff; --brand: #ffffff; --shadow: 0 12px 28px rgba(0,0,0,0.45); }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; transition: background .25s ease, color .25s ease; }
 
 .complain-container { width: 85%; max-width: 950px; margin: -5px auto; }
-.complain-card {
-    background: var(--card);
-    padding: 35px;
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    margin-top: -11px;
-}
+.complain-card { background: var(--card); padding: 35px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-top: -11px; }
 
 .complain-header { margin-bottom: 25px; }
-.complain-headline {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--brand);
-    text-align: left;
-    margin-bottom: -1px;
-    margin-left: 5px;
-}
-.complain-subline {
-    font-size: 14px;
-    color: var(--text);
-    opacity: 0.85;
-    text-align: left;
-    margin-bottom: 45px;
-    margin-left: 8px;
-}
+.complain-headline { font-size: 28px; font-weight: 700; color: var(--brand); text-align: left; margin-bottom: -1px; margin-left: 5px; }
+.complain-subline { font-size: 14px; color: var(--text); opacity: 0.85; text-align: left; margin-bottom: 45px; margin-left: 8px; }
 .dark .complain-subline { color: var(--muted-text); }
 
 .complain-list { display: flex; flex-direction: column; gap: 25px; }
-
-.complain-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: var(--shadow);
-    transition: transform 0.2s ease;
-}
+.complain-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.2s ease; }
 .complain-item:hover { transform: translateY(-2px); }
 
-.complain-user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-.complain-user-img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid var(--border);
-}
-.complain-user-name {
-    font-weight: 650;
-    font-size: 17px;
-    color: var(--text);
-}
+.complain-user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.complain-user-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
+.complain-user-name { font-weight: 650; font-size: 17px; color: var(--text); }
 .dark .complain-user-name { color: var(--text); }
 
-.complain-header-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
-}
+.complain-header-item { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 6px; }
 .complain-type { font-size: 20px; font-weight: 700; color: #F97316; }
-.complain-date { font-size: 13px; color: var(--muted-text);margin-top:-51px; }
+.complain-date { font-size: 13px; color: var(--muted-text); margin-top:-51px; }
 
 .complain-meta-location { font-size: 14px; color: var(--muted-text); margin-bottom: 10px; }
-
 .complain-content { font-size: 15px; margin-bottom: 32px; line-height: 1.5; color: var(--text); }
 .complain-images { display: flex; gap: 12px; margin-bottom: 42px; flex-wrap: wrap; }
-.complain-img {
-    width: 250px;
-    height: auto;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
+.complain-img { width: 250px; height: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease; }
 .complain-img:hover { transform: scale(1.05); }
 
-/* Votes & Action Buttons */
-.complain-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 12px;
-}
-
-.vote-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    font-size: 14px;
-    font-weight: 500;
-    background-color: #22c55e;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
-}
+.complain-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.vote-button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 14px; font-weight: 500; background-color: #22c55e; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; }
 .vote-button:hover { background-color: #4ade80; transform: scale(1.05); }
-
-.action-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.edit-btn, .delete-btn {
-    padding: 5px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
-    color: #fff;
-    transition: transform 0.2s ease;
-}
-
-.edit-btn { background-color: darkviolet; width:52px;}
-.edit-btn:hover { background-color:#ba55d3;  transform: scale(1.05); }
-
-.delete-btn { background-color: red; }
+.action-buttons { display: flex; gap: 8px; }
+.edit-btn, .delete-btn { padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500; color: #fff; transition: transform 0.2s ease; }
+.edit-btn { background-color: darkviolet; width:52px; } 
+.edit-btn:hover { background-color:#ba55d3; transform: scale(1.05); }
+.delete-btn { background-color: red; } 
 .delete-btn:hover { background-color: darkred; transform: scale(1.05); }
 
-#lightbox {
-    position: fixed; top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.8);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 1000; cursor: zoom-out;
-}
+#lightbox { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: zoom-out; }
 #lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
+.alert-success { background-color: #22c55e; color: white; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; }
+
+/* Confirmation Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2001;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center; align-items: center;
+}
+.modal-content {
+    background: var(--card);
+    padding: 25px;
+    border-radius: 14px;
+    text-align: center;
+    max-width: 350px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.modal-content h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+    color: var(--brand);
+}
+.modal-actions {
+    margin-top: 15px;
+    display: flex; justify-content: center; gap: 12px;
+}
+.modal-actions button {
+    padding: 8px 14px;
+    border: none; border-radius: 8px;
+    cursor: pointer; font-weight: 500; font-size: 14px;
+}
+#confirmYes { background: red; color: white; }
+#confirmYes:hover { background: darkred; }
+#confirmNo { background: gray; color: white; }
+#confirmNo:hover { background: #555; }
 </style>
 
 @section Scripts {
@@ -258,5 +204,21 @@ function closeImage() {
     var lightbox = document.getElementById('lightbox');
     lightbox.style.display = 'none';
 }
+
+let deleteId = null;
+
+// Show custom modal
+function confirmDelete(id) {
+    deleteId = id;
+    document.getElementById("confirmModal").style.display = "flex";
+}
+
+// Modal button actions
+document.getElementById("confirmYes").onclick = function () {
+    window.location.href = '@Url.Action("Delete", "Complain")/' + deleteId;
+};
+document.getElementById("confirmNo").onclick = function () {
+    document.getElementById("confirmModal").style.display = "none";
+};
 </script>
 }

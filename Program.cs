@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+// ADD THIS:
+using Beacon.Data.Seeders; // <-- seeder namespace
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- DB ---
@@ -45,6 +48,22 @@ builder.Services
 
 var app = builder.Build();
 
+//
+// ---------- DB migrate + CSV seed (NEW) ----------
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync(); // ensure DB/tables exist
+
+    var env = services.GetRequiredService<IWebHostEnvironment>();
+    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("Seeder");
+    var csvPath = Path.Combine(env.WebRootPath ?? "wwwroot", "data", "dhaka_location_counts.csv");
+
+    await LocationCountsSeeder.SeedAsync(app.Services, csvPath, logger);
+}
+// ---------- End migrate + seed ----------
+
 // ---------- Seed Admin (role + user) ----------
 using (var scope = app.Services.CreateScope())
 {
@@ -54,7 +73,6 @@ using (var scope = app.Services.CreateScope())
 
     const string adminRole = "admin";
 
-    // Read from configuration (User Secrets or appsettings)
     var adminEmail = builder.Configuration["Admin:Email"] ?? "admin@beacon.local";
     var adminPassword = builder.Configuration["Admin:Password"] ?? "Admin#12345";
 

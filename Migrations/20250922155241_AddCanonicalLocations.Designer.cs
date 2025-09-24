@@ -4,6 +4,7 @@ using Beacon.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Beacon.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250922155241_AddCanonicalLocations")]
+    partial class AddCanonicalLocations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,55 +152,6 @@ namespace Beacon.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Beacon.Models.DevUpdate", b =>
-                {
-                    b.Property<string>("DevUpdateId")
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("dev_update_id");
-
-                    b.Property<string>("AdminId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("admin_id");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)")
-                        .HasColumnName("content");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)")
-                        .HasColumnName("image_url");
-
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasColumnName("location");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("type");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("DevUpdateId");
-
-                    b.HasIndex("AdminId");
-
-                    b.ToTable("dev_updates");
-                });
-
             modelBuilder.Entity("Beacon.Models.Faq", b =>
                 {
                     b.Property<string>("FaqId")
@@ -223,45 +177,6 @@ namespace Beacon.Migrations
                     b.HasKey("FaqId");
 
                     b.ToTable("faq");
-                });
-
-            modelBuilder.Entity("Beacon.Models.LocationSeedStats", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Alerts")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("alerts");
-
-                    b.Property<int>("CanonicalLocationId")
-                        .HasColumnType("int")
-                        .HasColumnName("location_id");
-
-                    b.Property<int>("Complaints")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("complaints");
-
-                    b.Property<int>("DevUpdates")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("dev_updates");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CanonicalLocationId")
-                        .IsUnique();
-
-                    b.ToTable("location_seed_stats");
                 });
 
             modelBuilder.Entity("Beacon.Models.User", b =>
@@ -510,28 +425,6 @@ namespace Beacon.Migrations
                         .IsRequired();
 
                     b.Navigation("Admin");
-                });
-
-            modelBuilder.Entity("Beacon.Models.DevUpdate", b =>
-                {
-                    b.HasOne("Beacon.Models.User", "Admin")
-                        .WithMany()
-                        .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Admin");
-                });
-
-            modelBuilder.Entity("Beacon.Models.LocationSeedStats", b =>
-                {
-                    b.HasOne("Beacon.Models.CanonicalLocation", "Location")
-                        .WithMany()
-                        .HasForeignKey("CanonicalLocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

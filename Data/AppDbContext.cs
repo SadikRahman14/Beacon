@@ -17,9 +17,24 @@ namespace Beacon.Data
         public DbSet<DevUpdate> DevUpdates { get; set; } = null!;
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public DbSet<Complain> Complains { get; set; }
+
+
+
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(builder);
+
+
+            builder.Entity<Complain>(entity =>
+            {
+                entity.HasKey(c => c.ComplaintId);
+                entity.HasOne(c => c.User)
+                      .WithMany()
+                      .HasForeignKey(c => c.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<AlertPost>(entity =>
             {
@@ -96,3 +111,5 @@ namespace Beacon.Data
         }
     }
 }
+
+           

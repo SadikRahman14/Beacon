@@ -12,10 +12,23 @@ namespace Beacon.Data
         // Expose the AlertPosts table
         public DbSet<AlertPost> AlertPosts { get; set; } = default!;
         public DbSet<Faq> Faqs { get; set; }
+        public DbSet<Complain> Complains { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(builder);
+
+
+            builder.Entity<Complain>(entity =>
+            {
+                entity.HasKey(c => c.ComplaintId);
+                entity.HasOne(c => c.User)
+                      .WithMany()
+                      .HasForeignKey(c => c.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<AlertPost>(entity =>
             {
@@ -52,3 +65,5 @@ namespace Beacon.Data
         }
     }
 }
+
+           

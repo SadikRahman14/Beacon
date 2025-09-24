@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Folder Include="Folders\Images\" />
+    <Folder Include="Views\Complain\" />
   </ItemGroup>
 
   <ItemGroup>

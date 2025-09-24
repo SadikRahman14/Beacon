@@ -1,15 +1,15 @@
-﻿@model IEnumerable<Beacon.Models.AlertPost>
+﻿@using System.Linq
+@model IEnumerable<Beacon.Models.DevUpdate>
 @{
-    ViewData["Title"] = "Alert Posts";
+    ViewData["Title"] = "Dev Updates";
 
-    string PrettyDate(DateTime? dt) => (dt ?? DateTime.UtcNow).ToString("MMM dd, yyyy");
+    string PrettyDate(DateTime dt) => dt.ToLocalTime().ToString("MMM dd, yyyy");
     string TypeClass(string? t) => (t ?? "").ToLower() switch
     {
-        "emergency" => "badge-emergency",
-        "safety" => "badge-safety",
-        "event" => "badge-event",
-        "announcement" => "badge-announce",
-        "weather" => "badge-weather",
+        "bug" or "bugfix" or "fix" => "badge-emergency",
+        "release" => "badge-event",
+        "deploy" or "deployment" => "badge-announce",
+        "maintenance" => "badge-safety",
         _ => "badge-default"
     };
 }
@@ -17,53 +17,41 @@
 <section class="alerts-section">
     <div class="alerts-container">
         <header class="alerts-header">
-            <h2 class="alerts-title">Latest alerts</h2>
-            <p class="alerts-subtitle">Stay informed about emergencies, safety notices, events and more.</p>
+            <h2 class="alerts-title">Dev updates</h2>
+            <p class="alerts-subtitle">Latest changes, fixes, deployments, and more.</p>
         </header>
 
-        @if (!Model.Any())
+        @if (!(Model?.Any() ?? false))
         {
-            <div class="alerts-empty">No alerts available.</div>
+            <div class="alerts-empty">No dev updates available.</div>
         }
         else
         {
             <div class="alerts-grid">
-                @foreach (var alert in Model.OrderByDescending(a => a.CreatedAt))
+                @foreach (var item in Model.OrderByDescending(a => a.CreatedAt))
                 {
-                    <article class="alert-card" data-alert-id="@alert.AlertId">
-                        <!-- Meta row -->
+                    <article class="alert-card" data-update-id="@item.DevUpdateId">
+                        <!-- Meta -->
                         <div class="meta-row">
-                            <time class="meta-date">@PrettyDate(alert.CreatedAt)</time>
-                            <span class="alert-type @TypeClass(alert.Type)">@alert.Type</span>
+                            <time class="meta-date">@PrettyDate(item.CreatedAt)</time>
+                            <span class="alert-type @TypeClass(item.Type)">@item.Type</span>
                         </div>
 
-                        <!-- Title -->
+                        <!-- Title (Location behaves like the “heading” from your original card) -->
                         <h3 class="alert-heading">
-                            <a asp-action="Details" asp-route-id="@alert.AlertId">
-                                @(!string.IsNullOrWhiteSpace(alert.Location) ? alert.Location : "Alert")
+                            <a asp-action="Details" asp-route-id="@item.DevUpdateId">
+                                @(!string.IsNullOrWhiteSpace(item.Location) ? item.Location : "Update")
                             </a>
                         </h3>
 
-                        <p class="alert-content clamp-3">@alert.Content</p>
+                        <!-- Content (clamped to 3 lines like the reference) -->
+                        <p class="alert-content clamp-3">@item.Content</p>
 
-                        <div class="poster">
-                            <div class="avatar">
-                                @{
-                                    var name = alert.Admin?.Email ?? "User";
-                                    var initial = char.ToUpperInvariant(name.FirstOrDefault('U'));
-                                }
-                                <span>@initial</span>
-                            </div>
-                            <div class="poster-info">
-                                <div class="poster-name">@((alert.Admin?.Email) ?? "Unknown")</div>
-                                <div class="poster-label">Posted</div>
-                            </div>
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(alert.AlertImageUrl))
+                        @* Optional thumbnail if present *@
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
                         {
                             <div class="alert-thumb">
-                                <img src="@alert.AlertImageUrl" alt="Alert image">
+                                <img src="@item.ImageUrl" alt="Update image">
                             </div>
                         }
 
@@ -81,24 +69,22 @@
                             </div>
 
                             <div class="row-actions">
-                                <a asp-action="Details" asp-route-id="@alert.AlertId" class="btn btn-hollow">
+                                <a asp-action="Details" asp-route-id="@item.DevUpdateId" class="btn btn-hollow">
                                     See details
                                 </a>
+
+                                @* (Optional) Admin edit/delete controls; safe addition *@
                                 @if (User.IsInRole("admin"))
                                 {
-                                    <a asp-action="Edit" asp-route-id="@alert.AlertId" class="btn btn-primary">
+                                    <a asp-action="Edit" asp-route-id="@item.DevUpdateId" class="btn btn-primary">
                                         Edit
                                     </a>
-                                }
 
-                                @* Admin-only delete *@
-                                @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("admin"))
-                                {
                                     <form asp-action="Delete"
-                                          asp-route-id="@alert.AlertId"
+                                          asp-route-id="@item.DevUpdateId"
                                           method="post"
                                           class="inline-form"
-                                          onsubmit="return confirm('Delete this alert permanently?');">
+                                          onsubmit="return confirm('Delete this update permanently?');">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-danger">Delete</button>
                                     </form>
@@ -106,6 +92,7 @@
                             </div>
                         </div>
                     </article>
+
                     <hr class="alert-divider" />
                 }
             </div>
@@ -115,7 +102,7 @@
         {
             <div class="actions-row">
                 <a asp-action="Create" class="btn btn-primary">
-                    <span class="btn-icon">＋</span> Add Alert
+                    <span class="btn-icon">＋</span> New Update
                 </a>
             </div>
         }
@@ -124,26 +111,26 @@
 
 @section Scripts {
     <script>
-        (function(){
-          // Vote buttons (UI only)
-          document.querySelectorAll('[data-alert-id]').forEach(card => {
-            const up = card.querySelector('.vote-up');
-            const down = card.querySelector('.vote-down');
-            const upC = card.querySelector('.up-count');
-            const downC = card.querySelector('.down-count');
+        (function () {
+            // Vote buttons (UI only)
+            document.querySelectorAll('[data-update-id]').forEach(card => {
+                const up = card.querySelector('.vote-up');
+                const down = card.querySelector('.vote-down');
+                const upC = card.querySelector('.up-count');
+                const downC = card.querySelector('.down-count');
 
-            up?.addEventListener('click', () => {
-              up.classList.add('active','up');
-              down.classList.remove('active','down');
-              upC.textContent = String((parseInt(upC.textContent || '0',10) + 1));
-            });
+                up?.addEventListener('click', () => {
+                    up.classList.add('active', 'up');
+                    down?.classList.remove('active', 'down');
+                    upC.textContent = String((parseInt(upC.textContent || '0', 10) + 1));
+                });
 
-            down?.addEventListener('click', () => {
-              down.classList.add('active','down');
-              up.classList.remove('active','up');
-              downC.textContent = String((parseInt(downC.textContent || '0',10) + 1));
+                down?.addEventListener('click', () => {
+                    down.classList.add('active', 'down');
+                    up?.classList.remove('active', 'up');
+                    downC.textContent = String((parseInt(downC.textContent || '0', 10) + 1));
+                });
             });
-          });
         })();
     </script>
 }
@@ -151,7 +138,7 @@
 <style>
     /* ===== Theme (CSS variables) ===== */
     :root {
-        --bg: #0f172a; /* dark slate */
+        --bg: #0f172a;
         --card: #111827;
         --border: #1f2937;
         --text: #e5e7eb;
@@ -165,7 +152,7 @@
     }
 
     .light {
-        --bg: #f8fafc; /* light slate-50 */
+        --bg: #f8fafc;
         --card: #ffffff;
         --border: #e5e7eb;
         --text: #0f172a;
@@ -191,18 +178,8 @@
     }
 
     .alerts-header {
-        max-width: 100%;
-        margin: 0 0 28px 0
+        margin: 0 0 28px 0;
     }
-
-    .alert-divider {
-        border: none;
-        border-top: 2px dashed #6c63ff; /* purple accent so it’s visible */
-        margin: 32px auto;
-        width: 80%; /* narrower than full width for nicer look */
-    }
-
-
 
     .alerts-title {
         margin: 0;
@@ -212,13 +189,16 @@
         color: var(--h-text);
     }
 
+    .alerts-subtitle {
+        margin-top: 8px;
+        color: var(--muted);
+    }
 
-
-
-    .alert-card:not(:last-child) {
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 24px;
-        margin-bottom: 24px;
+    .alert-divider {
+        border: none;
+        border-top: 2px dashed #6c63ff;
+        margin: 32px auto;
+        width: 80%;
     }
 
     .alerts-empty {
@@ -240,7 +220,7 @@
         gap: 32px;
         border-top: 1px solid var(--border);
         padding-top: 32px;
-        justify-content: center
+        justify-content: center;
     }
 
     /* ===== Card ===== */
@@ -292,11 +272,6 @@
         color: #ddd6fe;
     }
 
-    .badge-weather {
-        background: #0c4a6e;
-        color: #bae6fd;
-    }
-
     .badge-default {
         background: #1f2937;
         color: #e5e7eb;
@@ -331,40 +306,6 @@
         overflow: hidden;
     }
 
-    /* Poster */
-    .poster {
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--border);
-        color: var(--text);
-        font-weight: 700;
-    }
-
-    .poster-info {
-        font-size: 13px;
-        line-height: 1.2;
-    }
-
-    .poster-name {
-        color: var(--h-text);
-        font-weight: 700;
-    }
-
-    .poster-label {
-        color: var(--muted);
-    }
-
     /* Thumbnail */
     .alert-thumb {
         margin-top: 12px;
@@ -374,12 +315,12 @@
         width: 100%;
     }
 
-    .alert-thumb img {
-        width: 100%;
-        height: 260px;
-        object-fit: cover;
-        display: block;
-    }
+        .alert-thumb img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            display: block;
+        }
 
     /* ===== Actions ===== */
     .card-actions {
@@ -412,34 +353,34 @@
         transition: box-shadow .15s ease, background .15s ease, transform .05s ease;
     }
 
-    .vote-btn:hover {
-        background: rgba(255,255,255,.04);
-    }
+        .vote-btn:hover {
+            background: rgba(255,255,255,.04);
+        }
 
-    .vote-btn:active {
-        transform: translateY(1px);
-    }
+        .vote-btn:active {
+            transform: translateY(1px);
+        }
 
-    .vote-btn.active.up {
-        box-shadow: 0 0 0 2px rgba(16,185,129,.5);
-    }
+        .vote-btn.active.up {
+            box-shadow: 0 0 0 2px rgba(16,185,129,.5);
+        }
 
-    .vote-btn.active.down {
-        box-shadow: 0 0 0 2px rgba(244,63,94,.5);
-    }
+        .vote-btn.active.down {
+            box-shadow: 0 0 0 2px rgba(244,63,94,.5);
+        }
 
-    .vote-btn .icon {
-        width: 16px;
-        height: 16px;
-        fill: currentColor;
-        opacity: .9;
-    }
+        .vote-btn .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            opacity: .9;
+        }
 
-    .vote-btn .count {
-        font-weight: 700;
-        font-size: 13px;
-        color: var(--h-text);
-    }
+        .vote-btn .count {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--h-text);
+        }
 
     .row-actions {
         display: inline-flex;
@@ -486,7 +427,6 @@
             background: rgba(255,255,255,.06);
         }
 
-    /* NEW: admin delete */
     .btn-danger {
         background: var(--danger);
         color: #fff;
@@ -500,7 +440,6 @@
         display: inline;
     }
 
-    /* Footer row */
     .actions-row {
         margin-top: 28px;
         display: flex;

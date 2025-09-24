@@ -1,0 +1,262 @@
+﻿@model Beacon.Models.DevUpdate
+@{
+    ViewData["Title"] = "Dev Update Details";
+    Layout = "_Layout";
+
+    // ---- Normalize whatever is in Model.ImageUrl into a requestable URL ----
+    string Normalize(string? raw, Func<string, string> content)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return content("~/images/placeholder-cover.jpg");
+
+        raw = raw.Trim();
+
+        // Already absolute (http/https or data:)
+        if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            raw.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            return raw;
+
+        // Application or root relative
+        if (raw.StartsWith("~/") || raw.StartsWith("/"))
+            return content(raw);
+
+        // Windows-style or physical path? (won't work in browser)
+        if (raw.Contains(':') || raw.StartsWith("\\") || raw.Contains("\\"))
+            return content("~/images/placeholder-cover.jpg");
+
+        // Plain relative like "uploads/foo.jpg" -> "/uploads/foo.jpg"
+        return content("~/" + raw.TrimStart('/'));
+    }
+
+    var heroUrl = Normalize(Model?.ImageUrl, Url.Content);
+}
+
+<div class="alert-details">
+    <header class="alert-header">
+        <h2>Beacon Updates <span class="badge">Details</span></h2>
+        <a asp-action="Index" class="back-link">← Back</a>
+    </header>
+
+    <!-- show the image explicitly; onerror -> placeholder -->
+    <figure class="hero-wrap">
+        <img src="@heroUrl"
+             alt="Update image"
+             class="hero-img"
+             onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-cover.jpg")';" />
+    </figure>
+
+    <section class="alert-meta">
+        <span class="type">@Model.Type</span>
+        <span class="location">@Model.Location</span>
+        <span class="time">@Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt")</span>
+
+        @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("admin"))
+        {
+            <span class="admin-actions">
+                <a asp-action="Edit" asp-route-id="@Model.DevUpdateId" class="btn btn-sm btn-primary">Edit</a>
+                <form asp-action="Delete" asp-route-id="@Model.DevUpdateId" method="post" class="inline-form"
+                      onsubmit="return confirm('Delete this update permanently?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+
+                <!-- tiny debug helper -->
+                <a href="@heroUrl" target="_blank" rel="noopener" class="btn btn-sm btn-hollow">Open image URL</a>
+            </span>
+        }
+    </section>
+
+    <h1 class="alert-title">@Model.Type — Update</h1>
+    <p class="alert-content">@Model.Content</p>
+
+    <footer class="alert-footer">
+        @{
+            var adminEmail = Model?.Admin?.Email ?? "Administrator";
+            var avatarUrl = Url.Content("~/images/avatar-placeholder.png");
+        }
+        <img src="@avatarUrl" alt="@adminEmail" class="admin-avatar" />
+        <div class="admin-info">
+            <strong>@adminEmail</strong>
+            <p>A D M I N</p>
+        </div>
+    </footer>
+</div>
+
+<style>
+    :root {
+        --bg: #0b1020;
+        --card: #151b2e;
+        --text: #dbe3ff;
+        --muted: #9aa3c7;
+        --accent: #7c5cff;
+        --accent-2: #22d3ee;
+        --danger: #ef4444;
+        --danger-hover: #dc2626;
+        --border: #243055;
+    }
+
+    .alert-details {
+        max-width: 1000px;
+        margin: 32px auto;
+        padding: 0 20px 28px;
+        color: var(--text)
+    }
+
+    .alert-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px
+    }
+
+        .alert-header h2 {
+            margin: 0;
+            font-weight: 800;
+            display: flex;
+            gap: 10px
+        }
+
+    .badge {
+        background: var(--accent);
+        color: #fff;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 9999px
+    }
+
+    .back-link {
+        font-weight: 800;
+        color: var(--accent);
+        text-decoration: none
+    }
+
+        .back-link:hover {
+            color: var(--accent-2)
+        }
+
+    .hero-wrap {
+        margin: 14px 0 18px 0;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        overflow: hidden;
+        background: var(--card)
+    }
+
+    .hero-img {
+        width: 100%;
+        height: 320px;
+        display: block;
+        object-fit: cover
+    }
+
+    .alert-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 18px;
+        align-items: center;
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 8px
+    }
+
+    .type {
+        background: #222a46;
+        color: var(--text);
+        padding: 6px 10px;
+        border-radius: 9999px;
+        font-weight: 800
+    }
+
+    .location {
+        font-weight: 700;
+        color: var(--text)
+    }
+
+    .time {
+        opacity: .9
+    }
+
+    .admin-actions {
+        margin-left: auto;
+        display: inline-flex;
+        gap: 8px
+    }
+
+    .alert-title {
+        margin: 8px 0 4px 0;
+        font-size: clamp(22px,3vw,34px);
+        font-weight: 900;
+        color: var(--text)
+    }
+
+    .alert-content {
+        margin-top: 8px;
+        white-space: pre-wrap;
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--muted)
+    }
+
+    .alert-footer {
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--accent)
+    }
+
+    .admin-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
+        object-fit: cover;
+        border: 1px solid var(--border)
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none
+    }
+
+    .btn-sm {
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 800
+    }
+
+    .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 6px 16px rgba(124,92,255,.25)
+    }
+
+        .btn-primary:hover {
+            background: var(--accent-2)
+        }
+
+    .btn-danger {
+        background: var(--danger);
+        color: #fff
+    }
+
+        .btn-danger:hover {
+            background: var(--danger-hover)
+        }
+
+    .btn-hollow {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border)
+    }
+
+    .inline-form {
+        display: inline
+    }
+</style>

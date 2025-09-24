@@ -17,15 +17,19 @@
     var userDOB = Model.DateOfBirth.HasValue ? Model.DateOfBirth.Value.ToString("yyyy-MM-dd") : "N/A";
     var userGender = !string.IsNullOrEmpty(Model.Gender) ? Model.Gender : "N/A";
     var userAddress = !string.IsNullOrEmpty(Model.Address) ? Model.Address : "N/A";
+ 
+    var profileImage = !string.IsNullOrEmpty(Model.ProfileImageUrl) 
+    ? Model.ProfileImageUrl 
+    : Url.Content("~/images/default-profile.jpg");
 
-    var profileImage = !string.IsNullOrEmpty(Model.ProfileImageUrl) ? Model.ProfileImageUrl : "~/images/profile.jpg";
 }
 
 <div class="profile-container">
     <div class="profile-card">
         <div class="profile-left">
             <div class="profile-pic-wrapper">
-                <img id="profilePreview" src="@profileImage" alt="Profile" class="profile-pic" />
+               <img id="profilePreview" src="@profileImage" alt="Profile" class="profile-pic"
+               onerror="this.src='@Url.Content("~/images/default-profile.jpg")';" />
             </div>
 
             <div class="file-input-container">
@@ -46,7 +50,7 @@
 
             <div class="btn-group">
                 <a href="/Home" class="nav-btn">Home</a>
-                <a href="/Posts" class="nav-btn">My Posts</a>
+                <a href="/Complain/MyPosts" class="nav-btn">My Posts</a>
                 <a href="/Account/EditProfile" class="nav-btn edit">Edit Profile</a>
             </div>
         </div>
@@ -138,13 +142,6 @@
         transition: background-color .25s ease, color .25s ease;
     }
 
-
-    
-
-    
-
-    
-
     /* ---------- LAYOUT ---------- */
     .profile-container {
         flex: 1;
@@ -218,10 +215,10 @@
         border: 1px solid transparent;
     }
 
-        .file-btn:hover {
-            background: pink;
-            color: #000;
-        }
+    .file-btn:hover {
+        background: #6f42c1;
+        color: #fff;
+      }
 
     /* ---------- RIGHT SIDE ---------- */
     .profile-right {
@@ -259,8 +256,9 @@
     }
 
     .nav-btn:hover {
-            background: pink;
-            color: #000;
+            background: #ff6666;
+            color: #fff;s
+            transform: scale(1.05);
     }
 
     .nav-btn.edit {
@@ -268,7 +266,7 @@
     }
 
     .nav-btn.edit:hover {
-        background: var(--success-hover);
+        background: #7fb3b8; 
     }
 
     

@@ -9,23 +9,18 @@ namespace Beacon.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        // Expose the AlertPosts table
         public DbSet<AlertPost> AlertPosts { get; set; } = default!;
-        public DbSet<Faq> Faqs { get; set; }
+        public DbSet<Faq> Faqs { get; set; } = default!;
         public DbSet<CanonicalLocation> CanonicalLocations { get; set; } = default!;
         public DbSet<LocationSeedStats> LocationSeedStats { get; set; } = default!;
-        public DbSet<DevUpdate> DevUpdates { get; set; } = null!;
-
-
-        public DbSet<Complain> Complains { get; set; }
-
-
+        public DbSet<DevUpdate> DevUpdates { get; set; } = default!;
+        public DbSet<Complain> Complaints { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-
+            // Complain entity
             builder.Entity<Complain>(entity =>
             {
                 entity.HasKey(c => c.ComplaintId);
@@ -34,9 +29,9 @@ namespace Beacon.Data
                       .HasForeignKey(c => c.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
-             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<AlertPost>(entity =>
+            // AlertPost entity
+            builder.Entity<AlertPost>(entity =>
             {
                 entity.HasKey(a => a.AlertId);
                 entity.Property(a => a.AlertId)
@@ -69,9 +64,9 @@ namespace Beacon.Data
                       .IsRequired();
             });
 
-            modelBuilder.Entity<CanonicalLocation>(entity =>
+            // CanonicalLocation entity with seed data
+            builder.Entity<CanonicalLocation>(entity =>
             {
-
                 entity.HasKey(x => x.Id);
 
                 entity.Property(x => x.NameEn)
@@ -94,22 +89,19 @@ namespace Beacon.Data
                 );
             });
 
-            modelBuilder.Entity<LocationSeedStats>(e =>
+            // LocationSeedStats entity
+            builder.Entity<LocationSeedStats>(entity =>
             {
-                e.HasKey(x => x.Id);
-                e.HasIndex(x => x.CanonicalLocationId).IsUnique();
-                e.Property(x => x.Alerts).HasDefaultValue(0);
-                e.Property(x => x.Complaints).HasDefaultValue(0);
-                e.Property(x => x.DevUpdates).HasDefaultValue(0);
-                e.HasOne(x => x.Location)
-                    .WithMany()
-                    .HasForeignKey(x => x.CanonicalLocationId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasKey(x => x.Id);
+                entity.HasIndex(x => x.CanonicalLocationId).IsUnique();
+                entity.Property(x => x.Alerts).HasDefaultValue(0);
+                entity.Property(x => x.Complaints).HasDefaultValue(0);
+                entity.Property(x => x.DevUpdates).HasDefaultValue(0);
+                entity.HasOne(x => x.Location)
+                      .WithMany()
+                      .HasForeignKey(x => x.CanonicalLocationId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
-
-
         }
     }
 }
-
-           

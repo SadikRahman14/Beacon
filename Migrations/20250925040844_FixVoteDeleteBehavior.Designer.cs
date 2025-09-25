@@ -4,6 +4,7 @@ using Beacon.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Beacon.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250925040844_FixVoteDeleteBehavior")]
+    partial class FixVoteDeleteBehavior
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,41 +24,6 @@ namespace Beacon.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Beacon.Models.AlertComment", b =>
-                {
-                    b.Property<string>("CommentId")
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("comment_id");
-
-                    b.Property<string>("AlertId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("alert_id");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(1500)
-                        .HasColumnType("nvarchar(1500)")
-                        .HasColumnName("content");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("CommentId");
-
-                    b.HasIndex("AlertId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("alert_comments");
-                });
 
             modelBuilder.Entity("Beacon.Models.AlertPost", b =>
                 {
@@ -106,8 +74,6 @@ namespace Beacon.Migrations
 
                     b.HasIndex("AdminId");
 
-                    b.HasIndex("CreatedAt");
-
                     b.ToTable("alertPost");
                 });
 
@@ -116,22 +82,24 @@ namespace Beacon.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("AlertPostAlertId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("AlertPostId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Value")
@@ -139,15 +107,15 @@ namespace Beacon.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AlertPostAlertId");
+
+                    b.HasIndex("AlertPostId");
+
                     b.HasIndex("UserId");
 
-                    b.HasIndex("AlertPostId", "UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId1");
 
-                    b.ToTable("alert_post_votes", t =>
-                        {
-                            t.HasCheckConstraint("CK_AlertPostVote_Value", "[Value] IN (-1, 1)");
-                        });
+                    b.ToTable("alert_post_votes");
                 });
 
             modelBuilder.Entity("Beacon.Models.CanonicalLocation", b =>
@@ -333,21 +301,23 @@ namespace Beacon.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("DevUpdateId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("DevUpdateId1")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Value")
@@ -355,15 +325,15 @@ namespace Beacon.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DevUpdateId");
+
+                    b.HasIndex("DevUpdateId1");
+
                     b.HasIndex("UserId");
 
-                    b.HasIndex("DevUpdateId", "UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId1");
 
-                    b.ToTable("DevUpdateVotes", t =>
-                        {
-                            t.HasCheckConstraint("CK_DevUpdateVote_Value", "[Value] IN (-1, 1)");
-                        });
+                    b.ToTable("dev_update_votes");
                 });
 
             modelBuilder.Entity("Beacon.Models.Faq", b =>
@@ -669,25 +639,6 @@ namespace Beacon.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Beacon.Models.AlertComment", b =>
-                {
-                    b.HasOne("Beacon.Models.AlertPost", "Alert")
-                        .WithMany()
-                        .HasForeignKey("AlertId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Beacon.Models.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Alert");
-
-                    b.Navigation("Author");
-                });
-
             modelBuilder.Entity("Beacon.Models.AlertPost", b =>
                 {
                     b.HasOne("Beacon.Models.User", "Admin")
@@ -703,15 +654,23 @@ namespace Beacon.Migrations
                 {
                     b.HasOne("Beacon.Models.AlertPost", "AlertPost")
                         .WithMany()
+                        .HasForeignKey("AlertPostAlertId");
+
+                    b.HasOne("Beacon.Models.AlertPost", null)
+                        .WithMany()
                         .HasForeignKey("AlertPostId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Beacon.Models.User", "User")
+                    b.HasOne("Beacon.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Beacon.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("AlertPost");
 
@@ -742,17 +701,25 @@ namespace Beacon.Migrations
 
             modelBuilder.Entity("Beacon.Models.DevUpdateVote", b =>
                 {
-                    b.HasOne("Beacon.Models.DevUpdate", "DevUpdate")
+                    b.HasOne("Beacon.Models.DevUpdate", null)
                         .WithMany()
                         .HasForeignKey("DevUpdateId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Beacon.Models.User", "User")
+                    b.HasOne("Beacon.Models.DevUpdate", "DevUpdate")
+                        .WithMany()
+                        .HasForeignKey("DevUpdateId1");
+
+                    b.HasOne("Beacon.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Beacon.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("DevUpdate");
 

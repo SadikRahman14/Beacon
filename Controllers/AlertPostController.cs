@@ -282,5 +282,106 @@ namespace Beacon.Controllers
                 // swallow on purpose
             }
         }
+
+        // Controllers/AlertPostsController.cs  (add inside the class)
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("alertposts/{id}/vote")]
+        public async Task<IActionResult> VoteAlertPost(
+            string id,
+            [FromForm] int value,
+            [FromServices] AppDbContext db,
+            [FromServices] UserManager<User> userManager
+        )
+        {
+            if (value != 1 && value != -1) return BadRequest("value must be +1 or -1");
+
+            var user = await userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var exists = await db.AlertPosts.AsNoTracking().AnyAsync(a => a.AlertId == id);
+            if (!exists) return NotFound();
+
+            var vote = await db.AlertPostVotes
+                .FirstOrDefaultAsync(v => v.AlertPostId == id && v.UserId == user.Id);
+
+            if (vote == null)
+            {
+                db.AlertPostVotes.Add(new AlertPostVote { AlertPostId = id, UserId = user.Id, Value = value });
+            }
+            else if (vote.Value == value)
+            {
+                // clicking the same arrow = toggle off
+                db.AlertPostVotes.Remove(vote);
+            }
+            else
+            {
+                vote.Value = value;
+                vote.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await db.SaveChangesAsync();
+
+            var result = new VoteResultVm
+            {
+                Upvotes = await db.AlertPostVotes.CountAsync(v => v.AlertPostId == id && v.Value == 1),
+                Downvotes = await db.AlertPostVotes.CountAsync(v => v.AlertPostId == id && v.Value == -1),
+                UserVote = await db.AlertPostVotes
+                              .Where(v => v.AlertPostId == id && v.UserId == user.Id)
+                              .Select(v => v.Value)
+                              .FirstOrDefaultAsync()
+            };
+
+            return Json(result);
+        }
+
+        [HttpGet]
+        [Route("alertposts/votes")]
+        public async Task<IActionResult> GetAlertPostVotes(
+            [FromQuery] string ids,
+            [FromServices] AppDbContext db,
+            [FromServices] UserManager<User> userManager)
+        {
+            var idList = (ids ?? "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct().ToList();
+            if (idList.Count == 0) return Json(new { });
+
+            var grouped = await db.AlertPostVotes
+                .Where(v => idList.Contains(v.AlertPostId))
+                .GroupBy(v => v.AlertPostId)
+                .Select(g => new { AlertId = g.Key, Up = g.Count(x => x.Value == 1), Down = g.Count(x => x.Value == -1) })
+                .ToListAsync();
+
+            var dict = grouped.ToDictionary(x => x.AlertId, x => new VoteResultVm
+            {
+                Upvotes = x.Up,
+                Downvotes = x.Down,
+                UserVote = 0
+            });
+
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var user = await userManager.GetUserAsync(User);
+                var myVotes = await db.AlertPostVotes
+                    .Where(v => v.UserId == user.Id && idList.Contains(v.AlertPostId))
+                    .Select(v => new { v.AlertPostId, v.Value })
+                    .ToListAsync();
+
+                foreach (var mv in myVotes)
+                {
+                    if (!dict.TryGetValue(mv.AlertPostId, out var vm))
+                    {
+                        vm = new VoteResultVm();
+                        dict[mv.AlertPostId] = vm;
+                    }
+                    vm.UserVote = mv.Value;
+                }
+            }
+
+            return Json(dict); // { "<id>": { upvotes, downvotes, userVote, score }, ... }
+        }
+
     }
 }

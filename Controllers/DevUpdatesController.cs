@@ -220,5 +220,103 @@ namespace Beacon.Controllers
             }
             catch { /* ignore */ }
         }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("devupdates/{id}/vote")]
+        public async Task<IActionResult> VoteDevUpdate(
+            string id,
+            [FromForm] int value,
+            [FromServices] AppDbContext db,
+            [FromServices] UserManager<User> userManager)
+        {
+            if (value != 1 && value != -1) return BadRequest("value must be +1 or -1");
+
+            var user = await userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var exists = await db.DevUpdates.AsNoTracking().AnyAsync(d => d.DevUpdateId == id);
+            if (!exists) return NotFound();
+
+            var vote = await db.DevUpdateVotes
+                .FirstOrDefaultAsync(v => v.DevUpdateId == id && v.UserId == user.Id);
+
+            if (vote == null)
+            {
+                db.DevUpdateVotes.Add(new DevUpdateVote { DevUpdateId = id, UserId = user.Id, Value = value });
+            }
+            else if (vote.Value == value)
+            {
+                // toggle off when clicking the same arrow
+                db.DevUpdateVotes.Remove(vote);
+            }
+            else
+            {
+                vote.Value = value;
+                vote.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await db.SaveChangesAsync();
+
+            var result = new VoteResultVm
+            {
+                Upvotes = await db.DevUpdateVotes.CountAsync(v => v.DevUpdateId == id && v.Value == 1),
+                Downvotes = await db.DevUpdateVotes.CountAsync(v => v.DevUpdateId == id && v.Value == -1),
+                UserVote = await db.DevUpdateVotes
+                               .Where(v => v.DevUpdateId == id && v.UserId == user.Id)
+                               .Select(v => v.Value)
+                               .FirstOrDefaultAsync()
+            };
+
+            return Json(result);
+        }
+
+        [HttpGet]
+        [Route("devupdates/votes")]
+        public async Task<IActionResult> GetDevUpdateVotes(
+            [FromQuery] string ids,
+            [FromServices] AppDbContext db,
+            [FromServices] UserManager<User> userManager)
+        {
+            var idList = (ids ?? "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct().ToList();
+            if (idList.Count == 0) return Json(new { });
+
+            var grouped = await db.DevUpdateVotes
+                .Where(v => idList.Contains(v.DevUpdateId))
+                .GroupBy(v => v.DevUpdateId)
+                .Select(g => new { DevUpdateId = g.Key, Up = g.Count(x => x.Value == 1), Down = g.Count(x => x.Value == -1) })
+                .ToListAsync();
+
+            var dict = grouped.ToDictionary(x => x.DevUpdateId, x => new VoteResultVm
+            {
+                Upvotes = x.Up,
+                Downvotes = x.Down,
+                UserVote = 0
+            });
+
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var user = await userManager.GetUserAsync(User);
+                var myVotes = await db.DevUpdateVotes
+                    .Where(v => v.UserId == user.Id && idList.Contains(v.DevUpdateId))
+                    .Select(v => new { v.DevUpdateId, v.Value })
+                    .ToListAsync();
+
+                foreach (var mv in myVotes)
+                {
+                    if (!dict.TryGetValue(mv.DevUpdateId, out var vm))
+                    {
+                        vm = new VoteResultVm();
+                        dict[mv.DevUpdateId] = vm;
+                    }
+                    vm.UserVote = mv.Value;
+                }
+            }
+
+            return Json(dict); // { "<id>": { upvotes, downvotes, userVote, score }, ... }
+        }
     }
 }

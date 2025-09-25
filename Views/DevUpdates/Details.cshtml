@@ -81,6 +81,9 @@
             <p>A D M I N</p>
         </div>
     </footer>
+    <div style="margin-top:2rem;">
+        @await Component.InvokeAsync("AlertComments", new { devUpdateId = Model.DevUpdateId })
+    </div>
 </div>
 
 <style>

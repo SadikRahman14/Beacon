@@ -33,17 +33,56 @@
     <footer class="alert-footer">
         @{
             var avatar = Model?.Admin?.ProfileImageUrl;
-            var avatarUrl = string.IsNullOrWhiteSpace(avatar)
-            ? Url.Content("~/images/avatar-placeholder.png")
-            : avatar;
+            var hasAvatar = !string.IsNullOrWhiteSpace(avatar);
+            var avatarUrl = hasAvatar
+            ? Url.Content(avatar)
+            : null;
+
             var adminName = $"{Model?.Admin?.FirstName} {Model?.Admin?.LastName}".Trim();
-            if (string.IsNullOrWhiteSpace(adminName)) adminName = Model?.Admin?.UserName ?? "Administrator";
-            var adminRole = Model?.Admin?.Role ?? "admin";
+            if (string.IsNullOrWhiteSpace(adminName))
+                adminName = Model?.Admin?.UserName ?? "Administrator";
+
+            var emailPrefix = Model?.Admin?.Email?.Split('@')[0] ?? "User";
         }
-        <img src="@avatarUrl" alt="@adminName" class="admin-avatar" />
+
+        @if (hasAvatar)
+        {
+            <img src="@avatarUrl" alt="@adminName" class="admin-avatar" />
+        }
+        else
+        {
+            <div class="admin-avatar-fallback">@emailPrefix.Substring(0, 1).ToUpper()</div>
+        }
+
         <div class="admin-info">
             <strong>@adminName</strong>
             <p>A D M I N</p>
         </div>
     </footer>
+    <div style="margin-top:2rem;">
+        @await Component.InvokeAsync("AlertComments", new { alertId = Model.AlertId })
+    </div>
+
 </div>
+
+<style>
+    .admin-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .admin-avatar-fallback {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #1193d4;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+</style>

@@ -1,0 +1,35 @@
+﻿@model IEnumerable<Beacon.Models.AlertComment>
+
+<div id="commentsListInner" data-count="@Model.Count()">
+    @foreach (var c in Model)
+    {
+        var name = (c.Author?.FirstName + " " + c.Author?.LastName)?.Trim();
+        if (string.IsNullOrWhiteSpace(name)) name = c.Author?.UserName ?? "User";
+        var avatarUrl = c.Author?.ProfileImageUrl ?? Url.Content("~/images/avatar-placeholder.png");
+
+        <div class="comment-item">
+            <img src="@avatarUrl" alt="@name" class="comment-avatar" />
+            <div class="comment-body">
+                <div class="comment-row1">
+                    <div class="comment-author">@name</div>
+                    <div class="comment-time">@c.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy • h:mm tt")</div>
+                </div>
+                <div class="comment-content">
+                    @Html.Raw(Html.Encode(c.Content).Replace("\n", "<br/>"))
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true
+                            && (User.IsInRole("admin") || User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == c.UserId))
+                {
+                    <div class="comment-actions">
+                        <button type="button" class="btn-link-danger" data-delete-id="@c.CommentId">Delete</button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="comments-empty">No comments yet. Be the first to comment.</div>
+    }
+</div>

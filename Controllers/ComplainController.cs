@@ -190,8 +190,6 @@ namespace Beacon.Controllers
             return RedirectToAction("MyPosts");
         }
 
-
-
         // ---------- DELETE ----------
         [HttpGet]
         public async Task<IActionResult> Delete(string id)

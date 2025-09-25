@@ -3,90 +3,98 @@
     ViewData["Title"] = "My Posts";
 }
 
-<div class="complain-container">
-    <div class="complain-card">
-        <!-- Page Heading + Subline -->
-        <div class="complain-header">
-            <h2 class="complain-headline">My Complaints</h2>
-            <p class="complain-subline">Browse all complaints you have submitted</p>
-        </div>
+<section class="alerts-section">
+    <div class="alerts-container">
+        <header class="alerts-header">
+            <h2 class="alerts-title">My Complaints</h2>
+            <p class="alerts-subtitle">Browse all complaints you have submitted</p>
+        </header>
 
-        <!-- Success message after deletion -->
         @if (TempData["Success"] != null)
         {
-            <div class="alert-success">
+            <div class="alerts-empty" style="background-color:#22c55e; color:white;">
                 @TempData["Success"]
             </div>
         }
 
-        @if (!Model.Any())
+        @if (!(Model?.Any() ?? false))
         {
-            <p style="text-align:center; color:var(--muted-text); margin:20px 0;">No complaints found.</p>
+            <div class="alerts-empty">No complaints found.</div>
         }
         else
         {
-            <div class="complain-list">
-                @foreach (var complain in Model)
+            <div class="alerts-grid">
+                @foreach (var complain in Model.OrderByDescending(c => c.CreatedAt))
                 {
-                    <div class="complain-item">
+                    <article class="alert-card" data-complain-id="@complain.ComplaintId">
 
-                        <!-- User Info -->
-                        <div class="complain-user-info">
-                            <img src="@(complain.User?.ProfileImageUrl ?? "/images/default-profile.jpg")" 
-                                 alt="User Image" class="complain-user-img" />
-                            <span class="complain-user-name">
-                                @(complain.User != null ? $"{complain.User.FirstName} {complain.User.LastName}" : "Unknown User")
-                            </span>
+                        <!-- Meta: Date + Type -->
+                        <div class="meta-row">
+                            <time class="meta-date">@complain.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")</time>
+                            <span class="alert-type badge-default">@complain.Type</span>
                         </div>
 
-                        <!-- Type + Time Top Right -->
-                        <div class="complain-header-item">
-                            <h3 class="complain-type">@complain.Type</h3>
-                            <span class="complain-date">@complain.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")</span>
+                        <!-- User Name + Profile Image -->
+                        <div class="meta-row" style="align-items:center; margin-top:6px;">
+                            <img src="@(complain.User?.ProfileImageUrl ?? "/images/default-profile.jpg")" 
+                                 alt="User Image" style="width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:8px;" />
+                            <a asp-controller="Account" asp-action="OthersProfile" asp-route-id="@complain.UserId" 
+                               style="color:var(--h-text); font-weight:600; text-decoration:none;">
+                                @(complain.User != null ? $"{complain.User.FirstName} {complain.User.LastName}" : "Unknown User")
+                            </a>
                         </div>
 
                         <!-- Location -->
-                        <div class="complain-meta-location">
-                            <strong>Location:</strong> @complain.Location
-                        </div>
+                        <h3 class="alert-heading">@(!string.IsNullOrWhiteSpace(complain.Location) ? complain.Location : "Location Unknown")</h3>
 
                         <!-- Content -->
-                        <p class="complain-content">@complain.Content</p>
+                        <p class="alert-content clamp-3">@complain.Content</p>
 
                         <!-- Images -->
                         @if (!string.IsNullOrEmpty(complain.ComplaintImageUrl))
                         {
                             var images = complain.ComplaintImageUrl.Split(',');
-                            <div class="complain-images">
+                            <div class="alert-thumb" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
                                 @foreach (var img in images)
                                 {
-                                    <img src="@img" alt="Complaint Image" class="complain-img" onclick="openImage(this)" />
+                                    <img src="@img" alt="Complaint Image" style="width:200px;height:150px;object-fit:cover;border-radius:12px;cursor:pointer;" onclick="openImage(this)" />
                                 }
                             </div>
                         }
 
                         <!-- Votes / Actions Section -->
-                        <div class="complain-actions">
-                            <button class="vote-button">👍 @complain.VoteCount</button>
+                        <div class="card-actions">
+                            <div class="vote-bar">
+                                <button type="button" class="vote-btn vote-up" aria-label="Upvote">
+                                    <svg viewBox="0 0 24 24" class="icon"><path d="M12 5l7 7H5l7-7z" /></svg>
+                                    <span class="count up-count">0</span>
+                                </button>
+                                <button type="button" class="vote-btn vote-down" aria-label="Downvote">
+                                    <svg viewBox="0 0 24 24" class="icon"><path d="M12 19l-7-7h14l-7 7z" /></svg>
+                                    <span class="count down-count">0</span>
+                                </button>
+                            </div>
+
                             <div class="action-buttons">
                                 <a class="edit-btn" href="@Url.Action("Edit", "Complain", new { id = complain.ComplaintId })">Edit</a>
                                 <a href="javascript:void(0);" class="delete-btn" onclick="confirmDelete('@complain.ComplaintId')">Delete</a>
                             </div>
                         </div>
 
-                    </div>
+                    </article>
+                    <hr class="alert-divider" />
                 }
             </div>
         }
     </div>
-</div>
+</section>
 
 <!-- Lightbox Modal -->
 <div id="lightbox" onclick="closeImage()" style="display:none;">
     <img id="lightbox-img" src="" alt="Full Image" />
 </div>
 
-<!-- Custom Confirmation Modal -->
+<!-- Confirmation Modal -->
 <div id="confirmModal" class="modal">
     <div class="modal-content">
         <h3>Confirm Deletion</h3>
@@ -97,100 +105,6 @@
         </div>
     </div>
 </div>
-
-<style>
-:root {
-    --bg: #fafafa;
-    --text: #1f2937;
-    --muted-text: #374151;
-    --card: #ffffff;
-    --border: #e5e7eb;
-    --brand: #3b82f6;
-    --shadow: 0 8px 25px rgba(0,0,0,0.12);
-}
-.dark { --bg: #0b1220; --text: #e5e7eb; --muted-text: #cbd5e1; --card: #0f172a; --border: #ffffff; --brand: #ffffff; --shadow: 0 12px 28px rgba(0,0,0,0.45); }
-body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; transition: background .25s ease, color .25s ease; }
-
-.complain-container { width: 85%; max-width: 950px; margin: -5px auto; }
-.complain-card { background: var(--card); padding: 35px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-top: -11px; }
-
-.complain-header { margin-bottom: 25px; }
-.complain-headline { font-size: 28px; font-weight: 700; color: var(--brand); text-align: left; margin-bottom: -1px; margin-left: 5px; }
-.complain-subline { font-size: 14px; color: var(--text); opacity: 0.85; text-align: left; margin-bottom: 45px; margin-left: 8px; }
-.dark .complain-subline { color: var(--muted-text); }
-
-.complain-list { display: flex; flex-direction: column; gap: 25px; }
-.complain-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.2s ease; }
-.complain-item:hover { transform: translateY(-2px); }
-
-.complain-user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-.complain-user-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
-.complain-user-name { font-weight: 650; font-size: 17px; color: var(--text); }
-.dark .complain-user-name { color: var(--text); }
-
-.complain-header-item { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 6px; }
-.complain-type { font-size: 20px; font-weight: 700; color: #F97316; }
-.complain-date { font-size: 13px; color: var(--muted-text); margin-top:-51px; }
-
-.complain-meta-location { font-size: 14px; color: var(--muted-text); margin-bottom: 10px; }
-.complain-content { font-size: 15px; margin-bottom: 32px; line-height: 1.5; color: var(--text); }
-.complain-images { display: flex; gap: 12px; margin-bottom: 42px; flex-wrap: wrap; }
-.complain-img { width: 250px; height: auto; border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease; }
-.complain-img:hover { transform: scale(1.05); }
-
-.complain-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
-.vote-button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 14px; font-weight: 500; background-color: #22c55e; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; }
-.vote-button:hover { background-color: #4ade80; transform: scale(1.05); }
-.action-buttons { display: flex; gap: 8px; }
-.edit-btn, .delete-btn { padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500; color: #fff; transition: transform 0.2s ease; }
-.edit-btn { background-color: darkviolet; width:52px; } 
-.edit-btn:hover { background-color:#ba55d3; transform: scale(1.05); }
-.delete-btn { background-color: red; } 
-.delete-btn:hover { background-color: darkred; transform: scale(1.05); }
-
-#lightbox { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: zoom-out; }
-#lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-
-.alert-success { background-color: #22c55e; color: white; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; }
-
-/* Confirmation Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 2001;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    justify-content: center; align-items: center;
-}
-.modal-content {
-    background: var(--card);
-    padding: 25px;
-    border-radius: 14px;
-    text-align: center;
-    max-width: 350px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-}
-.modal-content h3 {
-    margin-bottom: 10px;
-    font-size: 20px;
-    color: var(--brand);
-}
-.modal-actions {
-    margin-top: 15px;
-    display: flex; justify-content: center; gap: 12px;
-}
-.modal-actions button {
-    padding: 8px 14px;
-    border: none; border-radius: 8px;
-    cursor: pointer; font-weight: 500; font-size: 14px;
-}
-#confirmYes { background: red; color: white; }
-#confirmYes:hover { background: darkred; }
-#confirmNo { background: gray; color: white; }
-#confirmNo:hover { background: #555; }
-</style>
 
 @section Scripts {
 <script>
@@ -206,14 +120,10 @@ function closeImage() {
 }
 
 let deleteId = null;
-
-// Show custom modal
 function confirmDelete(id) {
     deleteId = id;
     document.getElementById("confirmModal").style.display = "flex";
 }
-
-// Modal button actions
 document.getElementById("confirmYes").onclick = function () {
     window.location.href = '@Url.Action("Delete", "Complain")/' + deleteId;
 };
@@ -222,3 +132,113 @@ document.getElementById("confirmNo").onclick = function () {
 };
 </script>
 }
+
+<style>
+/* ===== Use AllComplains styles ===== */
+:root {
+    --bg: #0f172a;
+    --card: #111827;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --accent: #4f46e5;
+    --btn-text: #ffffff;
+    --h-text: #ffffff;
+    --thumb-border: #1f2937;
+}
+.light { --bg: #f8fafc; --card: #ffffff; --border: #e5e7eb; --text: #0f172a; --muted: #475569; --accent: #4f46e5; --btn-text: #ffffff; --h-text: #0f172a; }
+
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; transition: background .25s ease, color .25s ease; }
+
+.alerts-section { padding: 64px 0; color: var(--text); }
+.alerts-container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.alerts-header { margin: 0 0 28px 0; }
+.alerts-title { margin:0; font-size: clamp(28px, 3vw, 44px); font-weight:700; line-height:1.15; color:var(--h-text); }
+.alerts-subtitle { margin-top:8px; color:var(--muted); }
+
+.alerts-grid { margin-top:32px; display:grid; grid-template-columns:1fr; gap:32px; border-top:1px solid var(--border); padding-top:32px; justify-content:center; }
+
+.alert-card { display:flex; flex-direction:column; gap:14px; max-width:640px; background: var(--card); padding: 20px; border-radius:12px; border:1px solid var(--border); box-shadow:0 8px 25px rgba(0,0,0,0.12); }
+.alert-card:hover { transform: translateY(-2px); transition: transform 0.2s ease; }
+
+.meta-row { display:flex; align-items:center; gap:12px; font-size:12px; }
+.meta-date { color: var(--muted); }
+.alert-type { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; background:#4f46e5; color:#fff; }
+
+.alert-heading { margin:6px 0 0 0; font-size:18px; font-weight:800; color:var(--h-text); }
+.alert-content { margin:6px 0 0 0; font-size:14px; color:var(--muted); }
+.clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+.alert-thumb { margin-top:12px; overflow:hidden; border:1px solid var(--thumb-border); border-radius:14px; width:100%; display:flex; flex-wrap:wrap; gap:6px; }
+.alert-thumb img { width:100%; height:260px; object-fit:cover; display:block; border-radius:8px; }
+
+.card-actions { margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.vote-bar {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .vote-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--h-text);
+        transition: box-shadow .15s ease, background .15s ease, transform .05s ease;
+    }
+
+        .vote-btn:hover {
+            background: rgba(255,255,255,.04);
+        }
+
+        .vote-btn:active {
+            transform: translateY(1px);
+        }
+
+        .vote-btn.active.up {
+            box-shadow: 0 0 0 2px rgba(16,185,129,.5);
+        }
+
+        .vote-btn.active.down {
+            box-shadow: 0 0 0 2px rgba(244,63,94,.5);
+        }
+
+        .vote-btn .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            opacity: .9;
+        }
+
+        .vote-btn .count {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--h-text);
+        }
+
+#lightbox { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:1000; cursor: zoom-out; }
+#lightbox img { max-width: 90%; max-height: 90%; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
+/* Confirmation Modal */
+.modal { display:none; position: fixed; z-index:2001; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+.modal-content { background: var(--card); padding:25px; border-radius:14px; text-align:center; max-width:350px; box-shadow: 0 8px 25px rgba(0,0,0,0.12); border:1px solid var(--border); }
+.modal-content h3 { margin-bottom:10px; font-size:20px; color:var(--accent); }
+.modal-actions { margin-top:15px; display:flex; justify-content:center; gap:12px; }
+.modal-actions button { padding:8px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:500; font-size:14px; }
+#confirmYes { background:red; color:white; }
+#confirmYes:hover { background:darkred; }
+#confirmNo { background:gray; color:white; }
+#confirmNo:hover { background:#555; }
+
+.edit-btn, .delete-btn { padding:5px 12px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:500; color:#fff; }
+.edit-btn { background-color:darkviolet; }
+.edit-btn:hover { background-color:#ba55d3; }
+.delete-btn { background-color:red; }
+.delete-btn:hover { background-color:darkred; }
+</style>

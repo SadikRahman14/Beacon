@@ -5,18 +5,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Beacon.Models
 {
-    [Table("dev_updates")]
+    [Table("DevUpdate")]
     public class DevUpdate
     {
         [Key]
-        [Column("dev_update_id")]
+        [Column("devUpdate_id")]
         public string DevUpdateId { get; set; } = Guid.NewGuid().ToString("N");
 
         [Required]
         [Column("admin_id")]
         public string AdminId { get; set; } = string.Empty;
 
-        [Column("image_url")]
+        [Column("dev_image_url")]
         [MaxLength(1024)]
         public string? ImageUrl { get; set; }
 

@@ -54,7 +54,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var db = services.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync(); // ensure DB/tables exist
+    //await db.Database.MigrateAsync(); // ensure DB/tables exist
 
     var env = services.GetRequiredService<IWebHostEnvironment>();
     var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("Seeder");

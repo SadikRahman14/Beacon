@@ -1,448 +1,804 @@
-﻿@using System.Linq
-@model IEnumerable<Beacon.Models.DevUpdate>
-@{
+﻿@{
     ViewData["Title"] = "Dev Updates";
-
-    string PrettyDate(DateTime dt) => dt.ToLocalTime().ToString("MMM dd, yyyy");
-    string TypeClass(string? t) => (t ?? "").ToLower() switch
-    {
-        "bug" or "bugfix" or "fix" => "badge-emergency",
-        "release" => "badge-event",
-        "deploy" or "deployment" => "badge-announce",
-        "maintenance" => "badge-safety",
-        _ => "badge-default"
-    };
 }
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>@ViewData["Title"]</title>
 
-<section class="alerts-section">
-    <div class="alerts-container">
-        <header class="alerts-header">
-            <h2 class="alerts-title">Dev updates</h2>
-            <p class="alerts-subtitle">Latest changes, fixes, deployments, and more.</p>
-        </header>
+    <!-- Optional: use a nicer font (requires internet) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-        @if (!(Model?.Any() ?? false))
-        {
-            <div class="alerts-empty">No dev updates available.</div>
-        }
-        else
-        {
-            <div class="alerts-grid">
-                @foreach (var item in Model.OrderByDescending(a => a.CreatedAt))
-                {
-                    <article class="alert-card" data-update-id="@item.DevUpdateId">
-                        <!-- Meta -->
-                        <div class="meta-row">
-                            <time class="meta-date">@PrettyDate(item.CreatedAt)</time>
-                            <span class="alert-type @TypeClass(item.Type)">@item.Type</span>
+    <!-- main CSS (place file in wwwroot/css/DevUpdates.css) -->
+    <link rel="stylesheet" href="@(Url.Content("~/css/DevUpdates.css"))" />
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <div class="header-top-emoji">🚀</div>
+            <h1 class="title">Development Updates</h1>
+            <p class="subtitle">Discover exciting city development plans and make your voice heard! ✨ Like, comment, and shape your city's future ✨</p>
+        </div>
+    </header>
+
+    <nav class="breadcrumb container">
+        <a href="/">← Back to Home</a>
+        <span class="sep">|</span>
+        <span class="current">Dev Updates</span>
+    </nav>
+
+    <section class="filter-box container">
+        <div class="filter-left">
+            <span class="filter-ico">⚑</span>
+            <label for="filterSelect" class="filter-label">Filter by Type:</label>
+            <select id="filterSelect" class="filter-select" aria-label="Filter updates by type">
+                <option value="All">All Types</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Parks & Recreation">Parks & Recreation</option>
+                <option value="Housing">Housing</option>
+                <option value="Technology">Technology</option>
+            </select>
+        </div>
+        <div id="updatesCount" class="updates-count">8 Updates</div>
+    </section>
+
+    <main class="card-grid container" id="cardGrid">
+
+        <!-- Card 1 -->
+        <article class="card" data-type="Transportation">
+            <header class="card-top">
+                <h2 class="card-title">
+                    New Metro Line Extension to East District
+                    <span class="badge planning">Planning</span>
+                    <span class="tag">Transportation</span>
+                </h2>
+                <div class="meta">📍 <b>East District</b> • 1/15/2024 • City Planning Department</div>
+            </header>
+            <p class="card-desc">Proposed extension of the Blue Line metro to connect East District with downtown area, including 5 new stations and modern facilities.</p>
+            <footer class="card-footer">
+                <div class="left-stats">
+                    <div class="stat-block">
+                        <button class="engage-btn like-btn" aria-label="like" data-liked="false" data-count="247">
+                            <!-- heart SVG -->
+                            <svg viewBox="0 0 24 24" class="ico-heart" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-7-4.35-9.17-6.23C-0.32 10.89 3.1 6 7 6c2.12 0 3.72 1.03 5 2.5C13.28 7.03 14.88 6 17 6c3.9 0 7.32 4.89 4.17 8.77C19 16.65 12 21 12 21z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="like-count">247</div>
+                        <div class="stat-label">likes</div>
+                    </div>
+                    <div class="stat-block">
+                        <button class="engage-btn dislike-btn" aria-label="dislike" data-disliked="false" data-count="12">
+                            <!-- thumb-down SVG -->
+                            <svg viewBox="0 0 24 24" class="ico-thumb" xmlns="http://www.w3.org/2000/svg"><path d="M15 3H6a1 1 0 00-1 1v9a3 3 0 003 3h3v4l6-7V6a3 3 0 00-2-3z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="dislike-count">12</div>
+                        <div class="stat-label">dislikes</div>
+                    </div>
+                    <div class="comments">
+                        <svg viewBox="0 0 24 24" class="ico-comment" xmlns="http://www.w3.org/2000/svg"><path d="M21 6h-2v9H7l-4 4V6a2 2 0 012-2h16a2 2 0 012 2z" /></svg>
+                        <span>42 Comments</span>
+                    </div>
+                </div>
+                <a href="#" class="btn details-btn">See Details</a>
+            </footer>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="card" data-type="Parks & Recreation">
+            <header class="card-top">
+                <h2 class="card-title">
+                    Central Park Renovation Project
+                    <span class="badge progress">In Progress</span>
+                    <span class="tag">Parks & Recreation</span>
+                </h2>
+                <div class="meta">📍 <b>Downtown</b> • 1/12/2024 • Parks Department</div>
+            </header>
+            <p class="card-desc">Complete renovation of Central Park including new playground equipment, walking trails, and sustainable lighting systems.</p>
+            <footer class="card-footer">
+                <div class="left-stats">
+                    <div class="stat-block">
+                        <button class="engage-btn like-btn" aria-label="like" data-liked="false" data-count="189">
+                            <svg viewBox="0 0 24 24" class="ico-heart" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-7-4.35-9.17-6.23C-0.32 10.89 3.1 6 7 6c2.12 0 3.72 1.03 5 2.5C13.28 7.03 14.88 6 17 6c3.9 0 7.32 4.89 4.17 8.77C19 16.65 12 21 12 21z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="like-count">189</div>
+                        <div class="stat-label">likes</div>
+                    </div>
+                    <div class="stat-block">
+                        <button class="engage-btn dislike-btn" aria-label="dislike" data-disliked="false" data-count="7">
+                            <svg viewBox="0 0 24 24" class="ico-thumb" xmlns="http://www.w3.org/2000/svg"><path d="M15 3H6a1 1 0 00-1 1v9a3 3 0 003 3h3v4l6-7V6a3 3 0 00-2-3z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="dislike-count">7</div>
+                        <div class="stat-label">dislikes</div>
+                    </div>
+                    <div class="comments">
+                        <svg viewBox="0 0 24 24" class="ico-comment" xmlns="http://www.w3.org/2000/svg"><path d="M21 6h-2v9H7l-4 4V6a2 2 0 012-2h16a2 2 0 012 2z" /></svg>
+                        <span>28 Comments</span>
+                    </div>
+                </div>
+                <a href="#" class="btn details-btn">See Details</a>
+            </footer>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="card" data-type="Technology">
+            <header class="card-top">
+                <h2 class="card-title">
+                    Smart Traffic Management System
+                    <span class="badge planning">Planning</span>
+                    <span class="tag">Technology</span>
+                </h2>
+                <div class="meta">📍 <b>City Wide</b> • 1/10/2024 • Traffic Management</div>
+            </header>
+            <p class="card-desc">Implementation of AI-powered traffic lights and real-time monitoring system to reduce congestion and improve safety.</p>
+            <footer class="card-footer">
+                <div class="left-stats">
+                    <div class="stat-block">
+                        <button class="engage-btn like-btn" aria-label="like" data-liked="false" data-count="134">
+                            <svg viewBox="0 0 24 24" class="ico-heart" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-7-4.35-9.17-6.23C-0.32 10.89 3.1 6 7 6c2.12 0 3.72 1.03 5 2.5C13.28 7.03 14.88 6 17 6c3.9 0 7.32 4.89 4.17 8.77C19 16.65 12 21 12 21z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="like-count">134</div>
+                        <div class="stat-label">likes</div>
+                    </div>
+                    <div class="stat-block">
+                        <button class="engage-btn dislike-btn" aria-label="dislike" data-disliked="false" data-count="3">
+                            <svg viewBox="0 0 24 24" class="ico-thumb" xmlns="http://www.w3.org/2000/svg"><path d="M15 3H6a1 1 0 00-1 1v9a3 3 0 003 3h3v4l6-7V6a3 3 0 00-2-3z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="dislike-count">3</div>
+                        <div class="stat-label">dislikes</div>
+                    </div>
+                    <div class="comments">
+                        <svg viewBox="0 0 24 24" class="ico-comment" xmlns="http://www.w3.org/2000/svg"><path d="M21 6h-2v9H7l-4 4V6a2 2 0 012-2h16a2 2 0 012 2z" /></svg>
+                        <span>19 Comments</span>
+                    </div>
+                </div>
+                <a href="#" class="btn details-btn">See Details</a>
+            </footer>
+        </article>
+
+        <!-- Card 4 -->
+        <article class="card" data-type="Housing">
+            <header class="card-top">
+                <h2 class="card-title">
+                    Affordable Housing Initiative
+                    <span class="badge progress">In Progress</span>
+                    <span class="tag">Housing</span>
+                </h2>
+                <div class="meta">📍 <b>South District</b> • 1/8/2024 • Housing Authority</div>
+            </header>
+            <p class="card-desc">Development of 500 affordable housing units in the South District with modern facilities and eco-friendly design.</p>
+            <footer class="card-footer">
+                <div class="left-stats">
+                    <div class="stat-block">
+                        <button class="engage-btn like-btn" aria-label="like" data-liked="false" data-count="162">
+                            <svg viewBox="0 0 24 24" class="ico-heart" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-7-4.35-9.17-6.23C-0.32 10.89 3.1 6 7 6c2.12 0 3.72 1.03 5 2.5C13.28 7.03 14.88 6 17 6c3.9 0 7.32 4.89 4.17 8.77C19 16.65 12 21 12 21z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="like-count">162</div>
+                        <div class="stat-label">likes</div>
+                    </div>
+                    <div class="stat-block">
+                        <button class="engage-btn dislike-btn" aria-label="dislike" data-disliked="false" data-count="9">
+                            <svg viewBox="0 0 24 24" class="ico-thumb" xmlns="http://www.w3.org/2000/svg"><path d="M15 3H6a1 1 0 00-1 1v9a3 3 0 003 3h3v4l6-7V6a3 3 0 00-2-3z" /></svg>
+                        </button>
+                        <div class="stat-num" data-role="dislike-count">9</div>
+                        <div class="stat-label">dislikes</div>
+                    </div>
+                    <div class="comments">
+                        <svg viewBox="0 0 24 24" class="ico-comment" xmlns="http://www.w3.org/2000/svg"><path d="M21 6h-2v9H7l-4 4V6a2 2 0 012-2h16a2 2 0 012 2z" /></svg>
+                        <span>23 Comments</span>
+                    </div>
+                </div>
+                <a href="#" class="btn details-btn">See Details</a>
+            </footer>
+        </article>
+
+        <!-- Add more cards here if needed -->
+
+        <div class="show-more-box container">
+            <button id="showMoreBtn" class="btn show-more-btn">Show More</button>
+        </div>
+
+        <!-- Hidden extra posts -->
+        <div id="extraCards" style="display:none;">
+
+            <!-- Card 5 -->
+            <article class="card" data-type="Transportation">
+                <header class="card-top">
+                    <h2 class="card-title">
+                        Riverfront Bridge Expansion
+                        <span class="badge planning">Planning</span>
+                        <span class="tag">Transportation</span>
+                    </h2>
+                    <div class="meta">📍 <b>North District</b> • 1/20/2024 • City Engineering</div>
+                </header>
+                <p class="card-desc">Plans to expand the Riverfront Bridge to reduce congestion and improve safety for both vehicles and pedestrians.</p>
+                <footer class="card-footer">
+                    <div class="left-stats">
+                        <div class="stat-block">
+                            <button class="engage-btn like-btn" aria-label="like" data-liked="false" data-count="98">
+                                <svg viewBox="0 0 24 24" class="ico-heart"><path d="M12 21s-7-4.35-9.17-6.23..." /></svg>
+                            </button>
+                            <div class="stat-num" data-role="like-count">98</div>
+                            <div class="stat-label">likes</div>
                         </div>
+                        <div class="stat-block">
+                            <button class="engage-btn dislike-btn" aria-label="dislike" data-disliked="false" data-count="4">
+                                <svg viewBox="0 0 24 24" class="ico-thumb"><path d="M15 3H6a1 1 0 00-1 1v9..." /></svg>
+                            </button>
+                            <div class="stat-num" data-role="dislike-count">4</div>
+                            <div class="stat-label">dislikes</div>
+                        </div>
+                        <div class="comments">
+                            <svg viewBox="0 0 24 24" class="ico-comment"><path d="M21 6h-2v9H7l-4 4V6..." /></svg>
+                            <span>12 Comments</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn details-btn">See Details</a>
+                </footer>
+            </article>
 
-                        <!-- Title (Location behaves like the “heading” from your original card) -->
-                        <h3 class="alert-heading">
-                            <a asp-action="Details" asp-route-id="@item.DevUpdateId">
-                                @(!string.IsNullOrWhiteSpace(item.Location) ? item.Location : "Update")
-                            </a>
-                        </h3>
+            <!-- Card 6 -->
+            <article class="card" data-type="Parks & Recreation">
+                <header class="card-top">
+                    <h2 class="card-title">
+                        Community Sports Complex
+                        <span class="badge progress">In Progress</span>
+                        <span class="tag">Parks & Recreation</span>
+                    </h2>
+                    <div class="meta">📍 <b>West Side</b> • 1/22/2024 • Sports Council</div>
+                </header>
+                <p class="card-desc">Construction of a new multi-purpose sports complex including basketball courts, football fields, and swimming pools.</p>
+                <footer class="card-footer">
+                    <div class="left-stats">
+                        <div class="stat-block">
+                            <button class="engage-btn like-btn" data-liked="false" data-count="142">
+                                <svg viewBox="0 0 24 24" class="ico-heart"><path d="M12 21s-7-4.35-9.17-6.23..." /></svg>
+                            </button>
+                            <div class="stat-num" data-role="like-count">142</div>
+                            <div class="stat-label">likes</div>
+                        </div>
+                        <div class="stat-block">
+                            <button class="engage-btn dislike-btn" data-disliked="false" data-count="5">
+                                <svg viewBox="0 0 24 24" class="ico-thumb"><path d="M15 3H6a1 1 0 00-1 1v9..." /></svg>
+                            </button>
+                            <div class="stat-num" data-role="dislike-count">5</div>
+                            <div class="stat-label">dislikes</div>
+                        </div>
+                        <div class="comments">
+                            <svg viewBox="0 0 24 24" class="ico-comment"><path d="M21 6h-2v9H7l-4 4V6..." /></svg>
+                            <span>31 Comments</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn details-btn">See Details</a>
+                </footer>
+            </article>
 
-                        <!-- Content (clamped to 3 lines like the reference) -->
-                        <p class="alert-content clamp-3">@item.Content</p>
+        </div>
+    </main>
 
-                        @* Optional thumbnail if present *@
-                        @if (!string.IsNullOrEmpty(item.ImageUrl))
-                        {
-                            <div class="alert-thumb">
-                                <img src="@item.ImageUrl" alt="Update image">
-                            </div>
+    <script>
+        // Filter, entry animation, and like/dislike logic
+        document.addEventListener('DOMContentLoaded', function () {
+            const cards = Array.from(document.querySelectorAll('.card'));
+            const select = document.getElementById('filterSelect');
+            const updatesCount = document.getElementById('updatesCount');
+
+            // staggered reveal
+            cards.forEach((c, i) => {
+                setTimeout(() => c.classList.add('show'), 120 + i * 120);
+            });
+
+            // update count
+            function updateCount() {
+                const visible = cards.filter(c => !c.classList.contains('hidden'));
+                updatesCount.textContent = visible.length + ' Updates';
+            }
+
+            // filter logic
+            select.addEventListener('change', function () {
+                const val = this.value;
+                cards.forEach(c => {
+                    if (val === 'All' || c.dataset.type === val) {
+                        c.classList.remove('hidden');
+                        // re-trigger show animation
+                        c.classList.remove('show');
+                        void c.offsetWidth;
+                        c.classList.add('show');
+                    } else {
+                        c.classList.add('hidden');
+                        c.classList.remove('show');
+                    }
+                });
+                updateCount();
+            });
+
+            updateCount();
+
+            // like/dislike logic (mutually exclusive)
+            function updateDisplayCount(btn, role) {
+                const parent = btn.closest('.stat-block');
+                const numEl = parent.querySelector('[data-role="' + role + '-count"]') || parent.querySelector('.stat-num');
+                // read dataset
+                const cnt = parseInt(btn.dataset.count || '0', 10);
+                numEl.textContent = cnt;
+            }
+
+            // event delegates for each card
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', function (e) {
+                    const likeBtn = e.target.closest('.like-btn');
+                    const dislikeBtn = e.target.closest('.dislike-btn');
+
+                    if (likeBtn) {
+                        const wasLiked = likeBtn.dataset.liked === 'true';
+                        let likeCount = parseInt(likeBtn.dataset.count, 10) || 0;
+                        const siblingDislike = likeBtn.closest('.left-stats').querySelector('.dislike-btn');
+
+                        // If previously disliked, remove that dislike
+                        if (siblingDislike && siblingDislike.dataset.disliked === 'true') {
+                            siblingDislike.dataset.disliked = 'false';
+                            let d = parseInt(siblingDislike.dataset.count,10) || 0;
+                            if (d > 0) {
+                                siblingDislike.dataset.count = (d - 1).toString();
+                                siblingDislike.closest('.stat-block').querySelector('[data-role="dislike-count"]').textContent = siblingDislike.dataset.count;
+                            }
+                            siblingDislike.classList.remove('active-dislike');
                         }
 
-                        <!-- Actions -->
-                        <div class="card-actions">
-                            <div class="vote-bar">
-                                <button type="button" class="vote-btn vote-up" aria-label="Upvote">
-                                    <svg viewBox="0 0 24 24" class="icon"><path d="M12 5l7 7H5l7-7z" /></svg>
-                                    <span class="count up-count">0</span>
-                                </button>
-                                <button type="button" class="vote-btn vote-down" aria-label="Downvote">
-                                    <svg viewBox="0 0 24 24" class="icon"><path d="M12 19l-7-7h14l-7 7z" /></svg>
-                                    <span class="count down-count">0</span>
-                                </button>
-                            </div>
+                        if (!wasLiked) {
+                            likeBtn.dataset.liked = 'true';
+                            likeBtn.dataset.count = (likeCount + 1).toString();
+                            likeBtn.classList.add('active-like');
+                        } else {
+                            likeBtn.dataset.liked = 'false';
+                            likeBtn.dataset.count = (likeCount - 1).toString();
+                            likeBtn.classList.remove('active-like');
+                        }
 
-                            <div class="row-actions">
-                                <a asp-action="Details" asp-route-id="@item.DevUpdateId" class="btn btn-hollow">
-                                    See details
-                                </a>
+                        // update displayed number
+                        const parent = likeBtn.closest('.stat-block');
+                        parent.querySelector('[data-role="like-count"]').textContent = likeBtn.dataset.count;
+                    }
 
-                                @* (Optional) Admin edit/delete controls; safe addition *@
-                                @if (User.IsInRole("admin"))
-                                {
-                                    <a asp-action="Edit" asp-route-id="@item.DevUpdateId" class="btn btn-primary">
-                                        Edit
-                                    </a>
+                    if (dislikeBtn) {
+                        const wasDisliked = dislikeBtn.dataset.disliked === 'true';
+                        let dcount = parseInt(dislikeBtn.dataset.count, 10) || 0;
+                        const siblingLike = dislikeBtn.closest('.left-stats').querySelector('.like-btn');
 
-                                    <form asp-action="Delete"
-                                          asp-route-id="@item.DevUpdateId"
-                                          method="post"
-                                          class="inline-form"
-                                          onsubmit="return confirm('Delete this update permanently?');">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                    </form>
-                                }
-                            </div>
-                        </div>
-                    </article>
+                        // If previously liked, remove that like
+                        if (siblingLike && siblingLike.dataset.liked === 'true') {
+                            siblingLike.dataset.liked = 'false';
+                            let l = parseInt(siblingLike.dataset.count,10) || 0;
+                            if (l > 0) {
+                                siblingLike.dataset.count = (l - 1).toString();
+                                siblingLike.closest('.stat-block').querySelector('[data-role="like-count"]').textContent = siblingLike.dataset.count;
+                            }
+                            siblingLike.classList.remove('active-like');
+                        }
 
-                    <hr class="alert-divider" />
-                }
-            </div>
-        }
+                        if (!wasDisliked) {
+                            dislikeBtn.dataset.disliked = 'true';
+                            dislikeBtn.dataset.count = (dcount + 1).toString();
+                            dislikeBtn.classList.add('active-dislike');
+                        } else {
+                            dislikeBtn.dataset.disliked = 'false';
+                            dislikeBtn.dataset.count = (dcount - 1).toString();
+                            dislikeBtn.classList.remove('active-dislike');
+                        }
 
-        @if (User.IsInRole("admin"))
-        {
-            <div class="actions-row">
-                <a asp-action="Create" class="btn btn-primary">
-                    <span class="btn-icon">＋</span> New Update
-                </a>
-            </div>
-        }
-    </div>
-</section>
-
-@section Scripts {
-    <script>
-        (function () {
-            // Vote buttons (UI only)
-            document.querySelectorAll('[data-update-id]').forEach(card => {
-                const up = card.querySelector('.vote-up');
-                const down = card.querySelector('.vote-down');
-                const upC = card.querySelector('.up-count');
-                const downC = card.querySelector('.down-count');
-
-                up?.addEventListener('click', () => {
-                    up.classList.add('active', 'up');
-                    down?.classList.remove('active', 'down');
-                    upC.textContent = String((parseInt(upC.textContent || '0', 10) + 1));
-                });
-
-                down?.addEventListener('click', () => {
-                    down.classList.add('active', 'down');
-                    up?.classList.remove('active', 'up');
-                    downC.textContent = String((parseInt(downC.textContent || '0', 10) + 1));
+                        // update displayed number
+                        const parent = dislikeBtn.closest('.stat-block');
+                        parent.querySelector('[data-role="dislike-count"]').textContent = dislikeBtn.dataset.count;
+                    }
                 });
             });
-        })();
+        });
     </script>
-}
+
+    <script>
+        document.getElementById('showMoreBtn').addEventListener('click', function () {
+            const extraCards = document.getElementById('extraCards');
+            extraCards.style.display = 'grid'; // keep it grid
+            extraCards.classList.add('card-grid'); // apply grid rules
+            this.style.display = 'none'; // hide button
+        });
+    </script>
+</body>
+</html>
 
 <style>
-    /* ===== Theme (CSS variables) ===== */
     :root {
-        --bg: #0f172a;
-        --card: #111827;
-        --border: #1f2937;
-        --text: #e5e7eb;
-        --muted: #94a3b8;
-        --accent: #4f46e5;
-        --btn-text: #ffffff;
-        --h-text: #ffffff;
-        --thumb-border: #1f2937;
-        --danger: #dc2626;
-        --danger-hover: #b91c1c;
+        --bg1: #f2f6fb;
+        --card-bg: #ffffff;
+        --muted: #6b7280;
+        --accent-blue: #3b82f6;
+        --accent-orange: #f59e0b;
+        --glass: rgba(255,255,255,0.7);
     }
 
-    .light {
-        --bg: #f8fafc;
-        --card: #ffffff;
-        --border: #e5e7eb;
-        --text: #0f172a;
-        --muted: #475569;
-        --accent: #4f46e5;
-        --btn-text: #ffffff;
-        --h-text: #0f172a;
-        --thumb-border: #e5e7eb;
-        --danger: #dc2626;
-        --danger-hover: #b91c1c;
+    /* Base */
+    * {
+        box-sizing: border-box;
     }
 
-    /* ===== Section / Container ===== */
-    .alerts-section {
-        padding: 64px 0;
-        color: var(--text);
+    html, body {
+        height: 100%;
     }
 
-    .alerts-container {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 24px;
-    }
-
-    .alerts-header {
-        margin: 0 0 28px 0;
-    }
-
-    .alerts-title {
+    body {
         margin: 0;
-        font-size: clamp(28px, 3vw, 44px);
-        font-weight: 700;
-        line-height: 1.15;
-        color: var(--h-text);
+        font-family: "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
+        background: linear-gradient(180deg, #eef6ff 0%, #fbf7f2 100%);
+        color: #111827;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
-    .alerts-subtitle {
-        margin-top: 8px;
-        color: var(--muted);
+    /* container */
+    .container {
+        width: 92%;
+        max-width: 1220px;
+        margin: 0 auto;
     }
 
-    .alert-divider {
-        border: none;
-        border-top: 2px dashed #6c63ff;
-        margin: 32px auto;
-        width: 80%;
+    /* Header (big gradient banner like screenshot) */
+    .header {
+        background: linear-gradient(90deg, #363675 46%, #5C5C73 100%, #942121 0%);
+        color: #fff;
+        padding: 54px 0 46px;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        box-shadow: 0 12px 40px rgba(59,130,246,0.08);
     }
 
-    .alerts-empty {
-        margin: 24px auto 0;
-        max-width: 680px;
+    .header-inner {
         text-align: center;
-        padding: 24px;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        background: var(--card);
-        color: var(--muted);
+        position: relative;
     }
 
-    /* ===== Grid ===== */
-    .alerts-grid {
-        margin-top: 32px;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 32px;
-        border-top: 1px solid var(--border);
-        padding-top: 32px;
-        justify-content: center;
+    .header-top-emoji {
+        font-size: 34px;
+        display: inline-block;
+        margin-bottom: 12px;
+        transform: translateY(-6px);
     }
 
-    /* ===== Card ===== */
-    .alert-card {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        max-width: 640px;
+    .title {
+        font-size: 44px;
+        margin: 6px 0 8px;
+        font-weight: 700;
+        letter-spacing: -0.6px;
     }
 
-    .meta-row {
+    .subtitle {
+        margin: 0 auto;
+        max-width: 900px;
+        opacity: 0.95;
+        font-size: 16px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
         display: flex;
         align-items: center;
         gap: 12px;
-        font-size: 12px;
-    }
-
-    .meta-date {
+        padding: 18px 0;
         color: var(--muted);
     }
 
-    .alert-type {
+        .breadcrumb a {
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .breadcrumb .sep {
+            opacity: 0.4;
+        }
+
+    /* Filter Box — large rounded with subtle internal gradient */
+    .filter-box {
+        background: linear-gradient(90deg, #ffffff 0%, #fbf8f3 45%, #f5f6ff 100%);
+        border-radius: 16px;
+        padding: 18px 20px;
+        margin: 10px auto 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 28px rgba(2,6,23,0.06);
+    }
+
+    .filter-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #111827;
+        font-size: 14px;
+    }
+
+    .filter-ico {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .filter-select {
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid #dfe7f2;
+        background: linear-gradient(180deg,#fff,#fbfbfe);
+        font-size: 14px;
+        min-width: 220px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    .updates-count {
+        background: linear-gradient(90deg,#eef2ff,#fff7ed);
+        padding: 9px 12px;
+        border-radius: 999px;
+        font-weight: 700;
+        color: #0f172a;
+        box-shadow: 0 6px 18px rgba(59,130,246,0.06);
+    }
+
+    /* Grid layout */
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+        margin-bottom: 56px;
+        align-items: stretch; /* make all cards align in same row */
+    }
+
+    /* Card */
+    .card {
+        background: linear-gradient(180deg, #ffffff, #fbfbfd);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 8px 28px rgba(2,6,23,0.05);
+        border: 1px solid rgba(15,23,42,0.03);
+        transform-origin: center;
+        transition: transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s, opacity .28s;
+        opacity: 0;
+        transform: translateY(12px) scale(.995);
+        /* force equal card height */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+        /* show/hide used by JS */
+        .card.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .card.hidden {
+            display: none;
+        }
+        /* hover lift */
+        .card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 50px rgba(2,6,23,0.09);
+        }
+
+    /* Card content */
+    .card-top {
+        margin-bottom: 10px;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 18.5px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        font-weight: 700;
+    }
+
+    .meta {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    /* badges & tag */
+    .badge {
         display: inline-block;
         padding: 6px 10px;
         border-radius: 999px;
         font-weight: 700;
         font-size: 12px;
-        user-select: none;
     }
 
-    /* Badges */
-    .badge-emergency {
-        background: #7f1d1d;
-        color: #fecaca;
-    }
-
-    .badge-safety {
-        background: #064e3b;
-        color: #a7f3d0;
-    }
-
-    .badge-event {
-        background: #1e3a8a;
-        color: #bfdbfe;
-    }
-
-    .badge-announce {
-        background: #3b0764;
-        color: #ddd6fe;
-    }
-
-    .badge-default {
-        background: #1f2937;
-        color: #e5e7eb;
-    }
-
-    .alert-heading {
-        margin: 6px 0 0 0;
-        font-size: 18px;
-        font-weight: 800;
-        color: var(--h-text);
-    }
-
-        .alert-heading a {
-            color: inherit;
-            text-decoration: none;
+        .badge.planning {
+            background: #FEF3C7;
+            color: #92400E;
         }
 
-            .alert-heading a:hover {
-                opacity: .9;
-            }
+        .badge.progress {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
 
-    .alert-content {
-        margin: 6px 0 0 0;
-        font-size: 14px;
+    .tag {
+        background: #f3f4f6;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        margin-left: 6px;
+    }
+
+    /* description */
+    .card-desc {
+        color: #374151;
+        margin: 12px 0 14px;
+        line-height: 1.5;
+        font-size: 15px;
+    }
+
+    /* footer */
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        border-top: 1px solid #f3f4f6;
+        padding-top: 12px;
+    }
+
+    /* left stats container (likes/dislikes/comments) */
+    .left-stats {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .stat-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 64px;
+        gap: 6px;
+    }
+
+    .engage-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        border: none;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+        cursor: pointer;
+        transition: transform .15s, box-shadow .15s, background .15s;
+    }
+
+        .engage-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: #9CA3AF;
+            transition: fill .12s, transform .12s;
+        }
+
+        .engage-btn:active {
+            transform: translateY(2px);
+        }
+
+    .stat-num {
+        font-weight: 700;
+        color: var(--accent-blue);
+        font-size: 16px;
+    }
+
+    .stat-label {
+        font-size: 12px;
         color: var(--muted);
     }
 
-    .clamp-3 {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+    /* active styles */
+    .active-like {
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-orange));
     }
 
-    /* Thumbnail */
-    .alert-thumb {
-        margin-top: 12px;
-        overflow: hidden;
-        border: 1px solid var(--thumb-border);
-        border-radius: 14px;
-        width: 100%;
-    }
-
-        .alert-thumb img {
-            width: 100%;
-            height: 260px;
-            object-fit: cover;
-            display: block;
+        .active-like svg {
+            fill: #fff;
+            transform: scale(1.05);
         }
 
-    /* ===== Actions ===== */
-    .card-actions {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid var(--border);
+    .active-dislike {
+        background: linear-gradient(90deg, #a0aec0, #cbd5e1);
+    }
+
+        .active-dislike svg {
+            fill: #111827;
+            transform: scale(1.05);
+        }
+
+    .comments {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-    }
-
-    .vote-bar {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .vote-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-        user-select: none;
-        padding: 8px 10px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: var(--card);
-        color: var(--h-text);
-        transition: box-shadow .15s ease, background .15s ease, transform .05s ease;
-    }
-
-        .vote-btn:hover {
-            background: rgba(255,255,255,.04);
-        }
-
-        .vote-btn:active {
-            transform: translateY(1px);
-        }
-
-        .vote-btn.active.up {
-            box-shadow: 0 0 0 2px rgba(16,185,129,.5);
-        }
-
-        .vote-btn.active.down {
-            box-shadow: 0 0 0 2px rgba(244,63,94,.5);
-        }
-
-        .vote-btn .icon {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-            opacity: .9;
-        }
-
-        .vote-btn .count {
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--h-text);
-        }
-
-    .row-actions {
-        display: inline-flex;
         gap: 8px;
-        align-items: center;
+        color: var(--muted);
+        font-size: 13px;
     }
 
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-weight: 800;
-        font-size: 14px;
-        cursor: pointer;
-        text-decoration: none;
-        transition: transform .05s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
-    }
-
-        .btn:active {
-            transform: translateY(1px);
+        .comments svg {
+            width: 18px;
+            height: 18px;
+            fill: #9CA3AF;
         }
 
-    .btn-primary {
-        background: var(--accent);
-        color: var(--btn-text);
-        box-shadow: 0 6px 16px rgba(79,70,229,.25);
-    }
-
-        .btn-primary:hover {
-            background: #4338ca;
-            box-shadow: 0 8px 18px rgba(79,70,229,.35);
-        }
-
-    .btn-hollow {
-        background: transparent;
-        color: var(--h-text);
-        border: 1px solid var(--border);
-    }
-
-        .btn-hollow:hover {
-            background: rgba(255,255,255,.06);
-        }
-
-    .btn-danger {
-        background: var(--danger);
+    /* details button */
+    .btn.details-btn {
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-orange));
         color: #fff;
+        padding: 10px 14px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 700;
+        box-shadow: 0 6px 18px rgba(59,130,246,0.12);
     }
 
-        .btn-danger:hover {
-            background: var(--danger-hover);
+    /* small screens */
+    @@media (max-width: 980px) {
+        .card-grid {
+            grid-template-columns: 1fr;
         }
 
-    .inline-form {
-        display: inline;
+        .title {
+            font-size: 36px;
+        }
+
+        .header {
+            padding: 36px 0 30px;
+        }
+
+        .filter-select {
+            min-width: 160px;
+        }
     }
 
-    .actions-row {
-        margin-top: 28px;
+    /* Show more section */
+ 
+    .show-more-box {
+        width: 100%;
         display: flex;
-        justify-content: flex-end;
+        justify-content: center;
+        margin: 30px 0;
+    }
+
+    .show-more-btn {
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-orange));
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .show-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
+
+    /* entrance animation keyframes */
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>

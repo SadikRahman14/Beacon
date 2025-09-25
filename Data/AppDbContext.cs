@@ -14,7 +14,7 @@ namespace Beacon.Data
         public DbSet<CanonicalLocation> CanonicalLocations { get; set; } = default!;
         public DbSet<LocationSeedStats> LocationSeedStats { get; set; } = default!;
         public DbSet<DevUpdate> DevUpdates { get; set; } = default!;
-        public DbSet<Complain> Complaints { get; set; } = default!;
+        public DbSet<Complain> Complains { get; set; } = default!; // ✅ match table name
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -23,7 +23,9 @@ namespace Beacon.Data
             // Complain entity
             builder.Entity<Complain>(entity =>
             {
+                entity.ToTable("Complains"); // ✅ force EF to use existing table
                 entity.HasKey(c => c.ComplaintId);
+
                 entity.HasOne(c => c.User)
                       .WithMany()
                       .HasForeignKey(c => c.UserId)

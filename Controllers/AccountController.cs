@@ -52,7 +52,6 @@ namespace Beacon.Controllers
             return Challenge(props, provider);
         }
 
-        // 2) Handle the callback from Google
         [HttpGet]
         public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
         {
@@ -71,15 +70,13 @@ namespace Beacon.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Try direct sign-in (user already linked)
             var signInResult = await _signInManager.ExternalLoginSignInAsync(
                 info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
 
             if (signInResult.Succeeded)
                 return LocalRedirect(returnUrl!);
 
-            // New user: create account and link external login
-            var email = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email)
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email)
                         ?? info.Principal.FindFirstValue("email");
 
             if (email == null)
@@ -117,7 +114,6 @@ namespace Beacon.Controllers
             await _signInManager.SignInAsync(user, isPersistent: false);
             return LocalRedirect(returnUrl!);
         }
-
 
         [Authorize]
         [HttpPost]
@@ -289,6 +285,21 @@ namespace Beacon.Controllers
         {
             await _signInManager.SignOutAsync();
             return LocalRedirect(returnUrl ?? Url.Action("Index", "Home")!);
+        }
+
+        // 🔹 New Action: View Other User Profile
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> OthersProfile(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return RedirectToAction("AllComplain", "Complain");
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound();
+
+            return View("OthersProfile", user);
         }
     }
 }

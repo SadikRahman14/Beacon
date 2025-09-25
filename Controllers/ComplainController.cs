@@ -20,6 +20,7 @@ namespace Beacon.Controllers
             _env = env;
         }
 
+        // ---------- CREATE ----------
         [HttpGet]
         public IActionResult CreateComplain()
         {
@@ -67,8 +68,8 @@ namespace Beacon.Controllers
                     if (file.Length > 0)
                     {
                         var fileName = $"{Guid.NewGuid()}{System.IO.Path.GetExtension(file.FileName)}";
-                        var filePath = System.IO.Path.Combine(uploadFolder, fileName);
-                        using var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
+                        var filePath = Path.Combine(uploadFolder, fileName);
+                        using var stream = new FileStream(filePath, FileMode.Create);
                         await file.CopyToAsync(stream);
 
                         uploadedPaths.Add($"/uploads/complaints/{fileName}");
@@ -88,6 +89,7 @@ namespace Beacon.Controllers
             return RedirectToAction(nameof(CreateComplain));
         }
 
+        // ---------- ALL COMPLAINS ----------
         [HttpGet]
         public IActionResult AllComplains()
         {
@@ -102,6 +104,7 @@ namespace Beacon.Controllers
             return View(complains);
         }
 
+        // ---------- MY POSTS ----------
         [HttpGet]
         public IActionResult MyPosts()
         {
@@ -119,7 +122,75 @@ namespace Beacon.Controllers
             return View("MyPost", myComplains);
         }
 
-        // ---------- NEW ACTION: Delete Complaint ----------
+        // GET: /Complain/Edit/5
+        [HttpGet]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return NotFound();
+
+            var complain = await _context.Complains.FindAsync(id);
+            if (complain == null)
+                return NotFound();
+
+            return View("EditCreateComplain", complain);
+        }
+
+        // POST: /Complain/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Complain model)
+        {
+            // Remove validation for fields we populate in controller
+            ModelState.Remove(nameof(model.UserId));
+            ModelState.Remove(nameof(model.User));
+            ModelState.Remove(nameof(model.ComplaintImageUrl));
+
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Please fix the validation errors.";
+                return View("EditCreateComplain", model);
+            }
+
+            var complain = await _context.Complains.FindAsync(model.ComplaintId);
+            if (complain == null)
+                return NotFound();
+
+            // Update only editable fields
+            complain.Type = model.Type;
+            complain.Content = model.Content;
+            complain.Location = model.Location;
+            complain.UpdatedAt = DateTime.UtcNow;
+
+            // Handle new image upload
+            if (model.ImageFiles != null && model.ImageFiles.Count > 0)
+            {
+                var uploadFolder = Path.Combine(_env.WebRootPath, "uploads/complaints");
+                if (!Directory.Exists(uploadFolder))
+                    Directory.CreateDirectory(uploadFolder);
+
+                var filePaths = new List<string>();
+                foreach (var file in model.ImageFiles)
+                {
+                    var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
+                    var filePath = Path.Combine(uploadFolder, uniqueFileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    filePaths.Add("/uploads/complaints/" + uniqueFileName);
+                }
+
+                complain.ComplaintImageUrl = string.Join(",", filePaths);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Complaint updated successfully.";
+            return RedirectToAction("MyPosts");
+        }
+
+        // ---------- DELETE ----------
         [HttpGet]
         public async Task<IActionResult> Delete(string id)
         {
@@ -130,7 +201,6 @@ namespace Beacon.Controllers
             if (complain == null)
                 return NotFound();
 
-            // Only allow deletion by owner
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (complain.UserId != userId)
                 return Forbid();

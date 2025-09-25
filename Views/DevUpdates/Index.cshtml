@@ -1,4 +1,10 @@
-﻿@using System.Linq
+﻿@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
+}
+<meta name="request-verification-token" content="@tokens.RequestToken" />
+
+@using System.Linq
 @model IEnumerable<Beacon.Models.DevUpdate>
 @{
     ViewData["Title"] = "Dev Updates";
@@ -18,7 +24,7 @@
     <div class="alerts-container">
         <header class="alerts-header">
             <h2 class="alerts-title">Dev updates</h2>
-            <p class="alerts-subtitle">Latest changes, fixes, deployments, and more.</p>
+            <p class="alerts-subtitle"> See the next plan of your city.</p>
         </header>
 
         @if (!(Model?.Any() ?? false))
@@ -111,26 +117,83 @@
 
 @section Scripts {
     <script>
-        (function () {
-            // Vote buttons (UI only)
-            document.querySelectorAll('[data-update-id]').forEach(card => {
-                const up = card.querySelector('.vote-up');
-                const down = card.querySelector('.vote-down');
+        (function(){
+          function anti() {
+            const el = document.querySelector('meta[name="request-verification-token"]');
+            return el ? el.getAttribute('content') : '';
+          }
+
+          const cards = Array.from(document.querySelectorAll('[data-dev-id]'));
+          if (cards.length === 0) return;
+
+          const ids = cards.map(c => c.getAttribute('data-dev-id')).filter(Boolean);
+          const idParam = encodeURIComponent(ids.join(','));
+
+          // Hydrate counts & user state
+          fetch(`/devupdates/votes?ids=${idParam}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+            .then(r => r.json())
+            .then(map => {
+              cards.forEach(card => {
+                const id = card.getAttribute('data-dev-id');
+                const upBtn = card.querySelector('.vote-up');
+                const downBtn = card.querySelector('.vote-down');
                 const upC = card.querySelector('.up-count');
                 const downC = card.querySelector('.down-count');
 
-                up?.addEventListener('click', () => {
-                    up.classList.add('active', 'up');
-                    down?.classList.remove('active', 'down');
-                    upC.textContent = String((parseInt(upC.textContent || '0', 10) + 1));
-                });
+                const stat = map[id] || { upvotes: 0, downvotes: 0, userVote: 0 };
+                if (upC) upC.textContent = String(stat.upvotes || 0);
+                if (downC) downC.textContent = String(stat.downvotes || 0);
 
-                down?.addEventListener('click', () => {
-                    down.classList.add('active', 'down');
-                    up?.classList.remove('active', 'up');
-                    downC.textContent = String((parseInt(downC.textContent || '0', 10) + 1));
+                upBtn?.classList.toggle('active', stat.userVote === 1);
+                upBtn?.classList.toggle('up',     stat.userVote === 1);
+                downBtn?.classList.toggle('active', stat.userVote === -1);
+                downBtn?.classList.toggle('down',   stat.userVote === -1);
+              });
+            })
+            .catch(console.error);
+
+          // Click handlers
+          cards.forEach(card => {
+            const id = card.getAttribute('data-dev-id');
+            const upBtn = card.querySelector('.vote-up');
+            const downBtn = card.querySelector('.vote-down');
+            const upC = card.querySelector('.up-count');
+            const downC = card.querySelector('.down-count');
+
+            async function sendVote(value) {
+              upBtn?.setAttribute('disabled','true');
+              downBtn?.setAttribute('disabled','true');
+              try {
+                const fd = new FormData();
+                fd.append('value', String(value));
+                const resp = await fetch(`/devupdates/${encodeURIComponent(id)}/vote`, {
+                  method: 'POST',
+                  headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'RequestVerificationToken': anti()
+                  },
+                  body: fd
                 });
-            });
+                if (resp.status === 401) { window.location.href = '/Account/Login'; return; }
+                if (!resp.ok) { console.error('Vote failed', await resp.text()); return; }
+                const data = await resp.json();
+                if (upC) upC.textContent = String(data.upvotes || 0);
+                if (downC) downC.textContent = String(data.downvotes || 0);
+
+                const uv = data.userVote || 0;
+                upBtn?.classList.toggle('active', uv === 1);
+                upBtn?.classList.toggle('up',     uv === 1);
+                downBtn?.classList.toggle('active', uv === -1);
+                downBtn?.classList.toggle('down',   uv === -1);
+              } finally {
+                upBtn?.removeAttribute('disabled');
+                downBtn?.removeAttribute('disabled');
+              }
+            }
+
+            upBtn?.addEventListener('click', () => sendVote(1).catch(console.error));
+            downBtn?.addEventListener('click', () => sendVote(-1).catch(console.error));
+          });
         })();
     </script>
 }
